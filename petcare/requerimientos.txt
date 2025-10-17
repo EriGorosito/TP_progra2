@@ -1,1 +1,3 @@
 #Acá deberíamos ir agregando los paquetes que usamos para estar todos con las mismas versiones en nuestros entornos virtuales. 
+
+pip install fastapi uvicorn 
