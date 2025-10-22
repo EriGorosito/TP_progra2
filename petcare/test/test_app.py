@@ -2,10 +2,10 @@
 
 import pytest
 from datetime import date
-from petcare.mascota import Mascota
-from petcare.usuario import Cliente, Cuidador
-from petcare.reserva import Reserva
-from petcare.resena import Resena
+from petcare.domain.mascota import Mascota
+from petcare.domain.usuario import Cliente, Cuidador
+from petcare.domain.reserva import Reserva
+from petcare.domain.resena import Resena
 
 
 def test_creacion_cliente_y_mascota():
