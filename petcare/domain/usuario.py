@@ -1,8 +1,8 @@
 from datetime import date
 from typing import List
 
-from petcare.mascota import Mascota
-from petcare.resena import Resena
+from petcare.domain.mascota import Mascota
+from petcare.domain.resena import Resena
 
 
 class Usuario:

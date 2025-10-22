@@ -1,6 +1,6 @@
 from datetime import date
-from petcare.mascota import Mascota
-from petcare.usuario import Cliente, Cuidador
+from petcare.domain.mascota import Mascota
+from petcare.domain.usuario import Cliente, Cuidador
 
 
 class Reserva:
