@@ -3,13 +3,26 @@ from typing import List
 
 from petcare.domain.mascota import Mascota
 from petcare.domain.resena import Resena
+from passlib.context import CryptContext 
 
+# Define el contexto para el hashing de contraseñas (usa bcrypt)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Usuario:
-    def __init__(self, nombre: str, email: str, contraseña: str):
+    def __init__(self, nombre: str, email: str, contrasena: str):
         self.nombre = nombre
         self.email = email
-        self.contraseña = contraseña
+        # Almacenar la versión hasheada, NO el texto plano
+        self.contrasena_hash = self.get_password_hash(contrasena)
+        
+    # Implementación de seguridad
+    def get_password_hash(self, contrasena: str) -> str:
+        """Hashea la contraseña."""
+        return pwd_context.hash(contrasena)
+
+    def verify_password(self, contrasena: str) -> bool:
+        """Verifica la contraseña contra el hash almacenado."""
+        return pwd_context.verify(contrasena, self.contrasena_hash)
 
     def registrarse(self):
         pass
