@@ -1,13 +1,19 @@
 from typing import Optional
+from dataclasses import dataclass
 
-
+@dataclass
 class Mascota:
-    def __init__(self, nombre: str, tipo: str, edad: int, peso: float, caracteristicas: Optional[str] = None):
-        self.nombre = nombre
-        self.tipo = tipo
-        self.edad = edad
-        self.peso = peso
-        self.caracteristicas = caracteristicas
+    id: int
+    nombre: str
+    especie: str
+    raza: str
+    edad: int
+    peso: float
+    # Características especiales (medicación, alergias, etc.)
+    caracteristicas_especiales: str | None
+    
+    # Importante: El ID del usuario "Cliente" que es el dueño
+    owner_id: int
 
     def mostrar_info(self):
         pass
