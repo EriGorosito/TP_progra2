@@ -36,7 +36,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
 # Implementar la función de decodificación y validación de token es el siguiente paso.
 
 # "tokenUrl" le dice a Swagger/docs que debe usar este endpoint para obtener el token.
-# ¡Tiene que coincidir con la ruta de login! -> /v1/users/login
+# Tiene que coincidir con la ruta de login -> /v1/users/login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/users/login")
 
 # Define un modelo Pydantic simple para los datos dentro del token
@@ -77,5 +77,5 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> Usuario:
     if user is None:
         raise credentials_exception
 
-    # ¡Éxito! Devuelve el objeto de dominio del usuario
+    # Devuelve el objeto de dominio del usuario
     return user
