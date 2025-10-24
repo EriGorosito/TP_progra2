@@ -1,4 +1,4 @@
-# petcare/core/security.py
+
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from fastapi import Depends, HTTPException, status

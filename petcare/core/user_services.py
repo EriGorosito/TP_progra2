@@ -1,4 +1,4 @@
-# petcare/core/user_service.py
+
 from typing import List, Union
 
 # Importar las clases de dominio (donde se define el hashing de contraseñas)

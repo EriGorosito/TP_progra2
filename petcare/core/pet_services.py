@@ -1,4 +1,4 @@
-# petcare/core/pet_service.py
+
 from typing import List
 from ..domain.mascota import Mascota
 from ..schemas.pet_schema import PetCreate
