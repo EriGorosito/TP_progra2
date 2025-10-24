@@ -1,4 +1,4 @@
-# petcare/schemas/user_schema.py
+
 from pydantic import BaseModel, EmailStr
 from typing import Literal
 
@@ -25,7 +25,7 @@ class UserOut(BaseModel):
         # Permite que Pydantic lea atributos de clases que no son diccionarios (como tus clases de dominio)
         from_attributes = True
 
-# Nuevo: Esquema para la solicitud de Login
+# Esquema para la solicitud de Login
 class TokenRequest(BaseModel):
     # Usaremos EmailStr para validar el formato del email
     email: EmailStr
