@@ -63,5 +63,5 @@ async def get_my_pets(
         )
 
     # 2. Llamar al servicio
-    pets = pet_service.get_pets_by_owner(owner_id=current_user.id)
+    pets = pet_services.get_pets_by_owner(owner_id=current_user.id)
     return pets
