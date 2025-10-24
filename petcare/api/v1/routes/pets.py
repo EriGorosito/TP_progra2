@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 
 from ....schemas.pet_schema import PetCreate, PetOut
-from ....core import pet_service
+from petcare.core import pet_services
 from ....domain.usuario import Usuario
 
 # Importa tu "cerradura" de seguridad
@@ -39,7 +39,7 @@ async def create_new_pet(
         
     # 2. Llamar al servicio
     # Pasamos el pet_data y el ID del usuario que obtuvimos del token
-    new_pet = pet_service.create_pet(pet_data, owner_id=current_user.id)
+    new_pet = pet_services.create_pet(pet_data, owner_id=current_user.id)
     return new_pet
 
 

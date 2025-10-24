@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from petcare.core.user_services import get_user_by_email
 from petcare.domain.usuario import Usuario
 
-# ⚠️ Esto debe ser una variable de entorno en producción.
+# Esto debe ser una variable de entorno en producción.
 # Usaremos una simple para el MOCK.
 SECRET_KEY = "SUPER_SECRETO_PARA_PRUEBAS_NO_USAR_EN_PROD" 
 ALGORITHM = "HS256" # Algoritmo de hashing para el token

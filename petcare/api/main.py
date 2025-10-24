@@ -1,6 +1,7 @@
 # petcare/api/main.py
 from fastapi import FastAPI
-from petcare.api.v1.routes.users import user_router, pet_router
+from petcare.api.v1.routes.users import user_router
+from petcare.api.v1.routes.pets import pet_router
 
 # Crea la instancia principal de la app
 app = FastAPI(
