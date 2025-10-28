@@ -1,11 +1,9 @@
 #Acá deberíamos ir agregando los paquetes que usamos para estar todos con las mismas versiones en nuestros entornos virtuales. 
-pip install pytest
-
-pip install fastapi uvicorn 
-
-pip install python-jose passlib
-
-pip install pydantic
-
-pip install email-validator
+pytest
+fastapi
+uvicorn
+python-jose
+passlib
+pydantic
+email-validator
 

@@ -9,11 +9,14 @@ class Mascota:
     raza: str
     edad: int
     peso: float
-    # Características especiales (medicación, alergias, etc.)
-    caracteristicas_especiales: str | None
-    
+
     # Importante: El ID del usuario "Cliente" que es el dueño
     owner_id: int
+    
+    # Características especiales (medicación, alergias, etc.)
+    caracteristicas_especiales: str | None = None
+    
+    
 
     def mostrar_info(self):
         pass
