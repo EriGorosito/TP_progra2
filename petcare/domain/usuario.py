@@ -1,3 +1,4 @@
+#petcare/domain/usuario.py
 from datetime import date, timedelta
 from typing import List
 
@@ -33,8 +34,8 @@ class Usuario:
 
 
 class Cliente(Usuario):
-    def __init__(self, id: int, nombre: str, email: str, contraseña: str):
-        super().__init__(id, nombre, email, contraseña)
+    def __init__(self, id: int, nombre: str, email: str, contrasena: str):
+        super().__init__(id, nombre, email, contrasena)
         self.mascotas: List['Mascota'] = []
 
     def registrar_mascota(self, mascota):
