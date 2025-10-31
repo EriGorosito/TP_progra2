@@ -1,0 +1,80 @@
+Reglas de Oro para trabajar en equipo con Git y GitHub
+1. La Regla de la Sincronización: "Nunca empieces sin actualizarte"
+Acción: Antes de escribir una sola línea de código, 
+SIEMPRE ve a tu rama principal (main o develop) y haz git pull.
+
+Por qué: Esto asegura que crearás tu nueva rama a partir de la versión 
+más reciente del proyecto. Evita que trabajes sobre código "viejo".
+
+2. La Regla de la Rama: "Una tarea, una rama"
+Acción: Cada nueva funcionalidad, corrección de bug, 
+o tarea (sin importar qué tan pequeña) DEBE hacerse en su propia rama.
+
+Por qué: Aísla el trabajo, permite revisiones claras (Pull Requests) y 
+evita que main se rompa.
+
+3. La Regla del Nombrado: "Nombra las ramas con intención"
+Acción: Nombra tus ramas de forma descriptiva. 
+Un buen formato es usar prefijos:
+
+feature/agregar-login-google
+
+fix/corregir-boton-pago
+
+docs/actualizar-readme
+
+Por qué: Ayuda a todo el equipo a saber de un vistazo en qué está 
+trabajando cada uno.
+
+4. La Regla de la Propiedad (¡La que mencionaste!): "Una rama, un responsable"
+Acción: Como regla general, una persona trabaja en una rama. 
+Si dos personas deben trabajar en la misma funcionalidad, 
+divídanla en dos ramas separadas 
+(ej. feature/login-frontend y feature/login-backend).
+
+Por qué: Evita el caos de conflictos constantes, 
+donde uno "pisa" el trabajo del otro.
+
+5. La Regla de Origen: "Las ramas nacen de main"
+Acción: Todas las ramas de trabajo (features, fixes) deben crearse siempre 
+a partir de la rama principal (main o develop).
+
+Por qué: Evita crear "ramas en cascada" (el problema que tuvieron). 
+Mantiene la estructura del repositorio plana, simple e independiente.
+
+6. La Regla de la Frecuencia: "Commits pequeños, commits frecuentes"
+Acción: Haz git commit seguido. Un commit debe ser una unidad lógica de trabajo
+ (ej. "Añade validación al formulario", no "Arreglé cosas").
+
+Por qué: Si algo sale mal, es muchísimo más fácil identificar el error y 
+revertir un commit pequeño que uno gigante.
+
+7. La Regla de la Revisión: "Nadie fusiona su propio trabajo"
+Acción: NUNCA fusiones (hagas merge) tu propia rama directamente a main. 
+SIEMPRE usa un Pull Request (PR).
+
+Por qué: El PR es el corazón del trabajo en equipo. 
+Permite que al menos otra persona (reviewer) revise tu código, 
+sugiera mejoras y apruebe los cambios. Esto asegura la calidad del código.
+
+8. La Regla del "Push": "Sube tu trabajo al final del día"
+Acción: Aunque tu rama no esté terminada, haz git push de tus commits al final 
+del día.
+
+Por qué: Sirve como una copia de seguridad 
+(si tu computadora se rompe, tu trabajo está en GitHub) y le da visibilidad 
+al equipo sobre tu progreso.
+
+9. La Regla de la Limpieza: "Cierra lo que ya terminaste"
+Acción: Inmediatamente después de que tu Pull Request es aprobado y fusionado 
+(merged) en main, elimina la rama (GitHub te da un botón para hacerlo).
+
+Por qué: Mantiene el repositorio limpio de ramas "muertas" 
+y evita que alguien la use por error.
+
+10. La Regla de main: "La rama main NO se toca"
+Acción: NUNCA, NUNCA hagas git commit directamente en la rama main (o develop).
+
+Por qué: main es la "fuente de la verdad". 
+Se considera que todo lo que está en main es código estable, probado y 
+funcional. Romper main detiene el trabajo de todo el equipo.
