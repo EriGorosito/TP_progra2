@@ -2,7 +2,8 @@
 from typing import Optional
 
 class Resena:
-    def __init__(self, cliente, cuidador, puntaje: int, comentario: Optional[str] = None):
+    def __init__(self, id: int, cliente, cuidador, puntaje: int, comentario: Optional[str] = None):
+        self.id = id
         self.cliente = cliente
         self.cuidador = cuidador
         self.puntaje = puntaje
