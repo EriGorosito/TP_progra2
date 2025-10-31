@@ -5,6 +5,7 @@ from typing import List
 from petcare.domain.mascota import Mascota
 from petcare.domain.resena import Resena
 from passlib.context import CryptContext 
+from petcare.domain.especie import Especie
 
 # Define el contexto para el hashing de contraseñas (usa bcrypt)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -53,13 +54,26 @@ class Cliente(Usuario):
 
 
 class Cuidador(Usuario):
-    def __init__(self, id: int, nombre: str, email: str, contrasena: str, descripcion: str = ""):
+    def __init__(self, id: int, nombre: str, email: str, contrasena: str, descripcion: str = "", ubicacion: str = ""):
         super().__init__(id, nombre, email, contrasena)
         self.descripcion = descripcion
-        self.servicios: List[str] = []  # especies que puede cuidar
-        self.tarifas: dict = {}         # especie -> precio por día
-        self.dias_no_disponibles: List[date] = []  # fechas que no puede trabajar
+        self.ubicacion = ubicacion
+        self.servicios: List[Especie] = []  # Especies que puede cuidar
+        self.tarifas: dict[Especie, float] = {}  # Especie -> precio diario
+        self.dias_no_disponibles: List[date] = []
         self.resenas: List[Resena] = []
+
+    def agregar_servicio(self, especie: Especie, tarifa_diaria: float):
+        """Agrega un tipo de mascota que puede cuidar"""
+        if especie not in self.servicios:
+            self.servicios.append(especie)
+        self.tarifas[especie] = tarifa_diaria
+
+    def eliminar_servicio(self, especie: Especie):
+        """Elimina un servicio ofrecido"""
+        if especie in self.servicios:
+            self.servicios.remove(especie)
+            self.tarifas.pop(especie, None)
 
     def marcar_no_disponible(self, fecha: date):
         if fecha not in self.dias_no_disponibles:
@@ -69,10 +83,11 @@ class Cuidador(Usuario):
         dias = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
         return all(dia not in self.dias_no_disponibles for dia in dias)
 
-    def actualizar_perfil(self, descripcion: str, servicios: List[str], tarifas: dict):
+    def actualizar_perfil(self, descripcion: str, servicios: List[Especie], tarifas: dict[Especie, float], ubicacion: str):
         self.descripcion = descripcion
         self.servicios = servicios
         self.tarifas = tarifas
+        self.ubicacion = ubicacion
 
     def aceptar_reserva(self, reserva):
         reserva.confirmar()
