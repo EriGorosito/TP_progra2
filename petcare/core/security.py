@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
-from passlib.context import CryptContext # <-- 1. AÑADIR ESTA IMPORTACIÓN
+from passlib.context import CryptContext 
 from sqlalchemy.orm import Session
 
 # # Importa tu servicio de usuario para buscar al usuario por email
