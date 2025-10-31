@@ -1,4 +1,5 @@
-from datetime import date
+#petcare/domain/usuario.py
+from datetime import date, timedelta
 from typing import List
 
 from petcare.domain.mascota import Mascota
@@ -9,7 +10,8 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Usuario:
-    def __init__(self, nombre: str, email: str, contrasena: str):
+    def __init__(self, id: int, nombre: str, email: str, contrasena: str):
+        self.id = id
         self.nombre = nombre
         self.email = email
         # Almacenar la versión hasheada, NO el texto plano
@@ -32,8 +34,8 @@ class Usuario:
 
 
 class Cliente(Usuario):
-    def __init__(self, nombre: str, email: str, contraseña: str):
-        super().__init__(nombre, email, contraseña)
+    def __init__(self, id: int, nombre: str, email: str, contrasena: str):
+        super().__init__(id, nombre, email, contrasena)
         self.mascotas: List['Mascota'] = []
 
     def registrar_mascota(self, mascota):
@@ -49,21 +51,32 @@ class Cliente(Usuario):
         pass
 
 
+
 class Cuidador(Usuario):
-    def __init__(self, nombre: str, email: str, contraseña: str, descripcion: str = ""):
-        super().__init__(nombre, email, contraseña)
+    def __init__(self, id: int, nombre: str, email: str, contrasena: str, descripcion: str = ""):
+        super().__init__(id, nombre, email, contrasena)
         self.descripcion = descripcion
-        self.servicios: List[str] = []
-        self.tarifas = {}
-        self.disponibilidad = []
-        self.reseñas: List[Resena] = []
+        self.servicios: List[str] = []  # especies que puede cuidar
+        self.tarifas: dict = {}         # especie -> precio por día
+        self.dias_no_disponibles: List[date] = []  # fechas que no puede trabajar
+        self.resenas: List[Resena] = []
+
+    def marcar_no_disponible(self, fecha: date):
+        if fecha not in self.dias_no_disponibles:
+            self.dias_no_disponibles.append(fecha)
+
+    def esta_disponible(self, fecha_inicio: date, fecha_fin: date) -> bool:
+        dias = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
+        return all(dia not in self.dias_no_disponibles for dia in dias)
 
     def actualizar_perfil(self, descripcion: str, servicios: List[str], tarifas: dict):
-        pass
+        self.descripcion = descripcion
+        self.servicios = servicios
+        self.tarifas = tarifas
 
     def aceptar_reserva(self, reserva):
-        pass
+        reserva.confirmar()
 
     def rechazar_reserva(self, reserva):
-        pass
+        reserva.rechazar()
 

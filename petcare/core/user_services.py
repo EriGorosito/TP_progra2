@@ -1,76 +1,51 @@
+# petcare/core/user_services.py 
 
-from typing import List, Union
+from sqlalchemy.orm import Session
+from fastapi import HTTPException, status 
 
-# Importar las clases de dominio (donde se define el hashing de contraseñas)
-from petcare.domain.usuario import Usuario, Cliente, Cuidador
+# Importar la UTILIDAD de Seguridad para hashing
+from ..core.security import get_password_hash 
 
-# Importar los esquemas Pydantic para la entrada de datos (register)
-from petcare.schemas.user_schema import UserCreate
+# Importar el modelo de Persistencia (ORM)
+from ..domain.models.usuario_model import Usuario as UsuarioModel 
 
-# MOCK: Simulación de la "Base de Datos" en memoria
-# Usamos List[Usuario] para indicar que almacena objetos de nuestras clases de dominio
-MOCK_USERS: List[Usuario] = []
-next_id = 1 # Contador para simular IDs únicos/clave primaria
+# Importar los esquemas Pydantic
+from ..schemas.user_schema import UserCreate
 
-def get_user_by_email(email: str) -> Union[Usuario, None]:
+# Nota: La lógica de Dominio (usuario.py) no se importa aquí, solo la seguridad.
+
+def get_user_by_email(db: Session, email: str) -> UsuarioModel | None:
+    """Busca un usuario en la DB real por email."""
+    return db.query(UsuarioModel).filter(UsuarioModel.email == email).first()
+
+
+def create_user_account(db: Session, user_data: UserCreate) -> UsuarioModel:
     """
-    Busca un usuario en la 'DB' por email.
-    Se usa para validar unicidad (registro) y verificar credenciales (login).
+    Crea un nuevo usuario y lo guarda en la DB real.
     """
-    for user in MOCK_USERS:
-        if user.email == email:
-            return user
-    return None
-
-def create_user_account(user_data: UserCreate) -> Usuario:
-    """
-    Crea un nuevo usuario (Cliente o Cuidador), valida unicidad y lo guarda.
     
-    Args:
-        user_data: Objeto Pydantic UserCreate con email, nombre, contraseña y tipo.
-
-    Returns:
-        El objeto Usuario (Cliente o Cuidador) recién creado.
-
-    Raises:
-        ValueError: Si el email ya está registrado.
-    """
-    global next_id
-    
-    # 1. Validar unicidad de email (Flujo Principal: Sistema valida unicidad de email)
-    if get_user_by_email(user_data.email):
-        raise ValueError("El email ya está registrado.")
+    # 1. Validar unicidad (Consulta a la DB)
+    if get_user_by_email(db, user_data.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El email ya está registrado."
+        )
         
-    # 2. Crear instancia de Cliente o Cuidador (Flujo Principal: Sistema crea cuenta)
-    if user_data.user_type == "Cliente":
-        NewUser = Cliente(
-            nombre=user_data.nombre,
-            email=user_data.email,
-            contraseña=user_data.contrasena
-        )
-    elif user_data.user_type == "Cuidador":
-        NewUser = Cuidador(
-            nombre=user_data.nombre,
-            email=user_data.email,
-            contraseña=user_data.contrasena
-        )
-    else:
-        # Esto es una validación de redundancia, Pydantic ya lo limita con Literal
-        raise ValueError("Tipo de usuario inválido.") 
-
-    # 3. Asignar ID (simulación de DB)
-    # Usamos setattr para añadir el atributo 'id' a la instancia
-    setattr(NewUser, 'id', next_id) 
-    next_id += 1
-
-    # 4. Guardar en 'DB'
-    MOCK_USERS.append(NewUser)
+    # 2. HASHING DE CONTRASEÑA (Llamamos a la capa de seguridad)
+    contrasena_hash = get_password_hash(user_data.contrasena)
     
-    # 5. Envío de email de confirmación (PENDIENTE - Flujo Principal: Sistema envía email de confirmación)
-    # En una implementación real, esto llamaría a un servicio de envío de emails (ej: SendGrid, Mailgun)
-    print(f"DEBUG: Email de confirmación simulado enviado a {NewUser.email}")
+    # 3. CREAR INSTANCIA DEL MODELO ORM (Persistencia)
+    # Ya no necesitas las subclases ClienteModel/CuidadorModel si usas la Tabla Única
+    NewUserModel = UsuarioModel(
+        nombre=user_data.nombre,
+        email=user_data.email,
+        contrasena_hash=contrasena_hash,  # <- Usamos el hash seguro
+        tipo=user_data.tipo.lower() # Guarda 'cliente' o 'cuidador'
+    )
 
-    return NewUser
+    # 4. Persistir en la DB
+    db.add(NewUserModel)
+    db.commit()
+    db.refresh(NewUserModel) 
 
-# NOTA: La lógica de verificación de contraseña (verify_password) 
-# reside en la clase Usuario (petcare/domain/usuarios.py).
+    return NewUserModel

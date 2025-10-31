@@ -11,14 +11,14 @@ class UserCreate(BaseModel):
     # En un API real, se manejaría de forma más segura (ej. no retornarla)
     contrasena: str
     # Literal limita las opciones a 'Cliente' o 'Cuidador'
-    user_type: Literal["Cliente", "Cuidador"] 
+    tipo: Literal["Cliente", "Cuidador"] 
 
 # Modelo Pydantic para los datos que la API retornará (respuesta exitosa)
 class UserOut(BaseModel):
     id: int # Asumiremos un ID (clave primaria) de la DB
     nombre: str
     email: EmailStr
-    user_type: str
+    tipo: str
     
     # Configuración opcional
     class Config:
