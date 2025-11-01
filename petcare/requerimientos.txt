@@ -6,5 +6,7 @@ python-jose
 passlib
 pydantic
 email-validator
-sqlalchemy alembic psycopg2-binary
+SQLAlchemy
+alembic
+psycopg2-binary
 
