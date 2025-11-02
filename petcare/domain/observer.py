@@ -62,6 +62,16 @@ class NotificationObserver:
                 tipo="resena"
             )
 
+        elif event_name == "mascota_registrada":
+            # La notificación es para el propietario mismo
+            # para confirmar que su mascota fue registrada
+            noti = Notificacion(
+                id=len(self.notificaciones) + 1,
+                usuario_id=data["owner"].id,
+                mensaje=f"¡Felicidades! Tu mascota '{data['pet'].nombre}' ({data['pet'].especie}) ha sido registrada.",
+                tipo="registro"
+            )
+
 
         else:
             # Si no se reconoce el evento, no se hace nada
@@ -69,3 +79,9 @@ class NotificationObserver:
 
 
         self.notificaciones.append(noti)
+
+event_manager = EventManager()
+noti_observer = NotificationObserver()
+
+# Se configura el sistema una sola vez al cargar el módulo
+event_manager.subscribe("mascota_registrada", noti_observer)
