@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from passlib.context import CryptContext 
@@ -26,8 +27,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 # ----------------------------------------
 
-# Esto debe ser una variable de entorno en producción.
-# Usaremos una simple para el MOCK.
+# Esto debe ser una variable de entorno en producción..
 SECRET_KEY = "SUPER_SECRETO_PARA_PRUEBAS_NO_USAR_EN_PROD" 
 ALGORITHM = "HS256" # Algoritmo de hashing para el token
 
@@ -59,10 +59,10 @@ class TokenData(BaseModel):
 
 # "tokenUrl" le dice a Swagger/docs que debe usar este endpoint para obtener el token.
 # Tiene que coincidir con la ruta de login -> /v1/users/login
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/users/login")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/users/login")
 
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+security = HTTPBearer()
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Dependencia de FastAPI:
     1. Recibe un token del header "Authorization: Bearer <token>".
@@ -72,11 +72,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     """
     from petcare.core.user_services import get_user_by_email
     from petcare.core.database import get_db
-    # from sqlalchemy.orm import Session
-     # Creamos una sesión de DB temporal solo para esta dependencia
+    # from sqlalchemy.orm import Sessionependencia
     # Nota: get_db es un generador, así que tenemos que manejarlo manualmente aquí.
     # En un proyecto grande, se usa una clase/función auxiliar para esto, 
     # pero este enfoque es simple y rompe el ciclo.
+    token = credentials.credentials  
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudieron validar las credenciales",
@@ -94,60 +95,43 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             detail="Error al conectar con la base de datos."
         )
  
-        
-    
+         
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("email")
         if email is None:
             raise credentials_exception
 
-        token_data = TokenData(email=email, user_type=payload.get("user_type"))
+        token_data = TokenData(email=email, user_type=payload.get("tipo"))
 
     except JWTError:
         raise credentials_exception
     
-    # Asegúrate de que db existe antes de usarlo
-    if db is None:
-        raise credentials_exception
 
-    # Busca al usuario en la base de datos
-    user = get_user_by_email(db=db, email=token_data.email) # <-- PASAR db A get_user_by_email
+    db_generator = get_db()
+    db = next(db_generator)
 
+    user = get_user_by_email(db=db, email=token_data.email)
     if user is None:
         raise credentials_exception
 
-    # Cierra la sesión temporalmente
-    if db:
-        db.close()
-
-    # Devuelve el objeto de dominio del usuario (modelo ORM)
+    db.close()
     return user
-
-    # credentials_exception = HTTPException(
-    #     status_code=status.HTTP_401_UNAUTHORIZED,
-    #     detail="No se pudieron validar las credenciales",
-    #     headers={"WWW-Authenticate": "Bearer"},
-    # )
-
-    # try:
-    #     # Decodifica el JWT
-    #     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-    #     email: str = payload.get("email")
-    #     if email is None:
-    #         raise credentials_exception
-
-    #     token_data = TokenData(email=email, user_type=payload.get("user_type"))
-
-    # except JWTError:
+    # # Asegúrate de que db existe antes de usarlo
+    # if db is None:
     #     raise credentials_exception
 
-    # # Busca al usuario en la "base de datos"
-    # user = get_user_by_email(email=token_data.email)
+    # # Busca al usuario en la base de datos
+    # user = get_user_by_email(db=db, email=token_data.email) # <-- PASAR db A get_user_by_email
 
     # if user is None:
     #     raise credentials_exception
 
-    # # Devuelve el objeto de dominio del usuario
+    # # Cierra la sesión temporalmente
+    # if db:
+    #     db.close()
+
+    # # Devuelve el objeto de dominio del usuario (modelo ORM)
     # return user
+
+    
