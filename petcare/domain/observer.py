@@ -80,8 +80,12 @@ class NotificationObserver:
 
         self.notificaciones.append(noti)
 
+# Inicialización única del sistema de eventos
 event_manager = EventManager()
 noti_observer = NotificationObserver()
 
-# Se configura el sistema una sola vez al cargar el módulo
+# Suscripciones
 event_manager.subscribe("mascota_registrada", noti_observer)
+event_manager.subscribe("reserva_creada", noti_observer)
+event_manager.subscribe("reserva_confirmada", noti_observer)
+event_manager.subscribe("reserva_rechazada", noti_observer)
