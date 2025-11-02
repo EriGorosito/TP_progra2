@@ -1,11 +1,12 @@
 # petcare/api/v1/routes/pets.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+from sqlalchemy.orm import Session
 
 from ....schemas.pet_schema import PetCreate, PetOut
 from petcare.core import pet_services
-from ....domain.usuario import Usuario
-
+from ....domain.models.usuario_model import Usuario
+from ....core.database import get_db
 # Importa tu "cerradura" de seguridad
 from ....core.security import get_current_user
 
@@ -22,6 +23,7 @@ pet_router = APIRouter(
 async def create_new_pet(
     pet_data: PetCreate,
     # ¡LA DEPENDENCIA! FastAPI inyectará aquí al usuario logueado
+    db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user) 
 ):
     """
@@ -31,7 +33,7 @@ async def create_new_pet(
     - Solo los usuarios de tipo 'Cliente' pueden crear mascotas.
     """
     # 1. Verificar Rol (Precondición de tu doc [cite: 35])
-    if current_user.user_type != "Cliente":
+    if current_user.tipo.lower() != "cliente":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Solo los 'Clientes' pueden registrar mascotas."
@@ -39,7 +41,7 @@ async def create_new_pet(
         
     # 2. Llamar al servicio
     # Pasamos el pet_data y el ID del usuario que obtuvimos del token
-    new_pet = pet_services.create_pet(pet_data, owner_id=current_user.id)
+    new_pet = pet_services.create_pet(db, pet_data, current_user)
     return new_pet
 
 
@@ -48,6 +50,7 @@ async def create_new_pet(
     summary="Ver mis mascotas"
 )
 async def get_my_pets(
+    db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
     """
@@ -56,12 +59,12 @@ async def get_my_pets(
     - Requiere autenticación (token JWT).
     """
     # 1. Verificar Rol
-    if current_user.user_type != "Cliente":
+    if current_user.tipo.lower() != "cliente":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Solo los 'Clientes' pueden ver sus mascotas."
         )
 
     # 2. Llamar al servicio
-    pets = pet_services.get_pets_by_owner(owner_id=current_user.id)
+    pets = pet_services.get_pets_by_owner(db, owner_id=current_user.id)
     return pets
