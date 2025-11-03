@@ -1,38 +1,48 @@
 
 from typing import List
-from ..domain.mascota import Mascota
-from ..schemas.pet_schema import PetCreate
+from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 
-# --- Simulación de Base de Datos de Mascotas ---
-MOCK_PETS: List[Mascota] = []
-next_pet_id = 1
-# -----------------------------------------------
+# Importar el Modelo ORM (Asumo que lo renombraste a mascota_model)
+from ..domain.models.mascota_model import Mascota as MascotaModel 
+from ..schemas.pet_schema import PetCreate # Importa tu esquema Pydantic
 
-def create_pet(pet_data: PetCreate, owner_id: int) -> Mascota:
+from petcare.domain.observer import event_manager
+from petcare.domain.models.usuario_model import Usuario as UsuarioModel
+
+
+def create_pet(db: Session, pet_data: PetCreate, current_user: UsuarioModel) -> MascotaModel:
     """
-    Crea un nuevo perfil de mascota y lo asocia a su dueño.
+    Crea un nuevo perfil de mascota y lo asocia a su dueño, guardándolo en la DB.
     """
-    global next_pet_id
     
-    new_pet = Mascota(
-        id=next_pet_id,
+    # 1. Crear instancia del Modelo ORM
+    # La desestructuración usa los atributos de PetCreate y añadimos owner_id
+    db_pet = MascotaModel(
         nombre=pet_data.nombre,
         especie=pet_data.especie,
         raza=pet_data.raza,
         edad=pet_data.edad,
         peso=pet_data.peso,
         caracteristicas_especiales=pet_data.caracteristicas_especiales,
-        owner_id=owner_id # ¡Asocia al dueño!
+        owner_id=current_user.id # <--- Clave Foránea del dueño autenticado
     )
     
-    MOCK_PETS.append(new_pet)
-    next_pet_id += 1
-    
-    print(f"Mascota creada: {new_pet.nombre} (Dueño ID: {owner_id})")
-    return new_pet
+    # 2. Persistir en la DB
+    db.add(db_pet)
+    db.commit()
+    db.refresh(db_pet) # Para obtener el ID generado automáticamente por la DB
 
-def get_pets_by_owner(owner_id: int) -> List[Mascota]:
+    event_manager.notify("mascota_registrada", {
+        "owner": current_user, 
+        "pet": db_pet
+    })
+
+    return db_pet
+
+def get_pets_by_owner(db: Session, owner_id: int) -> List[MascotaModel]:
     """
-    Devuelve la lista de mascotas de un dueño específico.
+    Devuelve la lista de mascotas de un dueño específico consultando la DB.
     """
-    return [pet for pet in MOCK_PETS if pet.owner_id == owner_id]
+    # Consulta a SQLAlchemy: Filtra por el owner_id
+    return db.query(MascotaModel).filter(MascotaModel.owner_id == owner_id).all()

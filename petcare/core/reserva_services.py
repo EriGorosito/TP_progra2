@@ -3,18 +3,12 @@ from typing import List
 from petcare.domain.reserva import Reserva
 from petcare.domain.usuario import Cliente, Cuidador
 from petcare.domain.mascota import Mascota
-from petcare.domain.observer import EventManager, NotificationObserver
+from petcare.domain.observer import event_manager
 
 # Mock de datos en memoria
 MOCK_RESERVAS: List[Reserva] = []
 next_reserva_id = 1
 
-# Inicializamos el sistema de eventos
-event_manager = EventManager()
-noti_observer = NotificationObserver()
-event_manager.subscribe("reserva_creada", noti_observer)
-event_manager.subscribe("reserva_confirmada", noti_observer)
-event_manager.subscribe("reserva_rechazada", noti_observer)
 
 def create_reserva(
     cliente: Cliente,
