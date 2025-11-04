@@ -9,4 +9,5 @@ email-validator
 SQLAlchemy
 alembic
 psycopg2-binary
+requests
 
