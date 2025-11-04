@@ -2,9 +2,10 @@
 
 from datetime import timedelta
 from fastapi import APIRouter, HTTPException, status, Depends
+from petcare.core.update_adress import update_user_address
 from sqlalchemy.orm import Session # <-- Necesitas importar Session
 # Ajusta la ruta de importación de user_schema y security si es necesario
-from petcare.schemas.user_schema import UserCreate, UserOut, TokenRequest, TokenResponse
+from petcare.schemas.user_schema import UserCreate, UserOut, TokenRequest, TokenResponse, UserUpdateDireccion
 from petcare.core.security import create_access_token, verify_password, ACCESS_TOKEN_EXPIRE_MINUTES
 from petcare.core.user_services import create_user_account, get_user_by_email
 from petcare.core.database import get_db # <-- IMPORTAR LA DEPENDENCIA DE LA DB
@@ -78,6 +79,18 @@ def login_for_access_token(
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+@user_router.put("/{user_id}/direccion", status_code=status.HTTP_200_OK)
+def update_direccion(
+    user_id: int,
+    payload: UserUpdateDireccion,
+    db: Session = Depends(get_db)
+):
+    return update_user_address(
+        db=db,
+        user_id=user_id,
+        direccion=payload.direccion
+    )
 # # petcare/api/v1/routes/users.py
 # from datetime import datetime, timedelta, timezone
 # from fastapi import APIRouter, HTTPException, status, Depends
