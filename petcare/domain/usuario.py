@@ -74,9 +74,13 @@ class Cuidador(Usuario):
         self.servicios = servicios
         self.tarifas = tarifas
 
-    def aceptar_reserva(self, reserva):
-        reserva.confirmar()
+    def aceptar_reserva(self, reserva, event_manager=None):
+        reserva.confirmar(event_manager)
 
-    def rechazar_reserva(self, reserva):
-        reserva.rechazar()
+          # Marcar los días como no disponibles
+        for i in range((reserva.fecha_fin - reserva.fecha_inicio).days + 1):
+            self.marcar_no_disponible(reserva.fecha_inicio + timedelta(days=i))
+
+    def rechazar_reserva(self, reserva, event_manager=None):
+        reserva.rechazar(event_manager)
 

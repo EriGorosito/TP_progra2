@@ -32,7 +32,7 @@ from typing import List
 from datetime import date
 
 from petcare.schemas.reserva_schema import ReservaCreate, ReservaOut
-from petcare.core.reserva_services import create_reserva, buscar_cuidadores_disponibles, noti_observer
+from petcare.core.reserva_services import create_reserva, buscar_cuidadores_disponibles #, noti_observer
 from petcare.core.security import get_current_user
 from petcare.domain.usuario import Usuario
 from petcare.core.reserva_services import create_reserva, event_manager
@@ -74,3 +74,44 @@ async def nueva_reserva(reserva_data: ReservaCreate, current_user: Usuario = Dep
         "reserva": reserva,
         "notificacion": ultima_noti
     }
+
+from petcare.core.reserva_services import MOCK_RESERVAS
+
+#para que el cuidador acepte y rechaze la reserva
+@reserva_router.put("/{reserva_id}/aceptar", status_code=status.HTTP_200_OK)
+async def aceptar_reserva(reserva_id: int, current_user: Usuario = Depends(get_current_user)):
+    # Solo cuidadores pueden aceptar reservas
+    if current_user.user_type != "Cuidador":
+        raise HTTPException(status_code=403, detail="Solo cuidadores pueden aceptar reservas.")
+
+    # Buscar reserva
+    reserva = next((r for r in MOCK_RESERVAS if r.id == reserva_id), None)
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva no encontrada.")
+
+    # Verificar que le pertenece al cuidador actual
+    if reserva.cuidador.id != current_user.id:
+        raise HTTPException(status_code=403, detail="No puedes aceptar reservas de otro cuidador.")
+
+    # Confirmar y marcar no disponibles los días
+    current_user.aceptar_reserva(reserva, event_manager)
+
+    return {"mensaje": "Reserva confirmada con éxito", "reserva": str(reserva)}
+
+
+@reserva_router.put("/{reserva_id}/rechazar", status_code=status.HTTP_200_OK)
+async def rechazar_reserva(reserva_id: int, current_user: Usuario = Depends(get_current_user)):
+    # Solo cuidadores pueden rechazar reservas
+    if current_user.user_type != "Cuidador":
+        raise HTTPException(status_code=403, detail="Solo cuidadores pueden rechazar reservas.")
+
+    reserva = next((r for r in MOCK_RESERVAS if r.id == reserva_id), None)
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva no encontrada.")
+
+    if reserva.cuidador.id != current_user.id:
+        raise HTTPException(status_code=403, detail="No puedes rechazar reservas de otro cuidador.")
+
+    current_user.rechazar_reserva(reserva, event_manager)
+
+    return {"mensaje": "Reserva rechazada", "reserva": str(reserva)}
