@@ -1,10 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional
+from petcare.domain.especie import Especie
 
 # Esquema base con campos comunes
 class PetBase(BaseModel):
     nombre: str
-    especie: str
+    especie: Especie
     raza: Optional[str] = None
     edad: int
     peso: float
@@ -17,6 +18,7 @@ class PetCreate(PetBase):
 # Esquema para la respuesta (lo que devuelve la API)
 class PetOut(PetBase):
     id: int
+    nombre: str
     owner_id: int # Mostramos el ID del dueño
 
     class Config:
