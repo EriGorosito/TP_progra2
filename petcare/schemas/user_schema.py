@@ -12,6 +12,8 @@ class UserCreate(BaseModel):
     contrasena: str
     # Literal limita las opciones a 'Cliente' o 'Cuidador'
     tipo: Literal["Cliente", "Cuidador"] 
+    #NUEVO
+    direccion: str 
 
 # Modelo Pydantic para los datos que la API retornará (respuesta exitosa)
 class UserOut(BaseModel):
@@ -19,6 +21,10 @@ class UserOut(BaseModel):
     nombre: str
     email: EmailStr
     tipo: str
+    direccion: str
+    lat: float
+    lon: float
+    map_url: str 
     
     # Configuración opcional
     class Config:
@@ -35,3 +41,6 @@ class TokenRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer" # Es estándar que sea un token de tipo 'bearer'
+
+class UserUpdateDireccion(BaseModel):
+    direccion: str

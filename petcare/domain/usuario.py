@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Usuario:
-    def __init__(self, id: int, nombre: str, email: str, contrasena: str):
+    def __init__(self, id: int, nombre: str, email: str, contrasena: str, direccion=None, lat=None, lon=None, map_url=None):
         self.id = id
         self.nombre = nombre
         self.email = email
@@ -31,6 +31,12 @@ class Usuario:
 
     def iniciar_sesion(self, email: str, contraseña: str) -> bool:
         pass
+
+    def update_address(self, direccion, lat, lon, map_url):
+        self.direccion = direccion
+        self.lat = lat
+        self.lon = lon
+        self.map_url = map_url
 
 
 class Cliente(Usuario):
