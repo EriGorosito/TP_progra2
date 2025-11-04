@@ -6,7 +6,7 @@ from petcare.domain.reserva import Reserva
 from petcare.domain.usuario import Cliente, Cuidador
 from petcare.domain.mascota import Mascota
 from petcare.domain.observer import event_manager
-from petcare.core.map_services import calcular_distancia_km
+from petcare.core.map_services import distancia_geodesica
 
 
 # Mock de datos en memoria
@@ -36,7 +36,7 @@ def buscar_cuidadores_disponibles(
             continue
 
         # Calcular distancia al cliente
-        distancia = calcular_distancia_km(ubicacion_cliente, c.ubicacion)
+        distancia = distancia_geodesica(ubicacion_cliente, c.ubicacion)
 
         cuidadores_filtrados.append((c, distancia))
 
