@@ -28,7 +28,7 @@ def buscar_cuidadores_disponibles(
     cuidadores_filtrados = []
     for c in cuidadores:
         # Filtrar por especie
-        if not especie_requeridas.issubset(set(c.tipos_mascotas)):
+        if not especie_requeridas.issubset(set(c.servicios)):
             continue
 
         # Filtrar por disponibilidad

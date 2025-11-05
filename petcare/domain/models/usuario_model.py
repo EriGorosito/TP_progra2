@@ -1,6 +1,7 @@
 # petcare/domain/models/usuario_model.py
 from sqlalchemy import Column, Integer, String, Float
 from petcare.core.database import Base
+from sqlalchemy.orm import relationship
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -14,3 +15,5 @@ class Usuario(Base):
     lat = Column(Float)
     lon = Column(Float)
     map_url = Column(String) 
+
+    cuidador = relationship("Cuidador", back_populates="usuario", uselist=False)
