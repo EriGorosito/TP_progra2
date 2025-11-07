@@ -7,7 +7,7 @@ services:
     volumes:
       - ./petcare:/app/petcare
       - db_data:/app # Monta el volumen donde se guardará petcare.db
-    # Ejecuta tu script de inicialización
+    # Ejecuta script de inicialización
     command: python init_db.py
 
   # 2. El servicio principal de tu API
