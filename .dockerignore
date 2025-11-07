@@ -1,0 +1,25 @@
+# Ignorar el entorno virtual
+venv/
+.venv/
+
+# Ignorar archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar configuraciones de Git y VSCode
+.git/
+.vscode/
+
+# Ignorar archivos del sistema operativo
+.DS_Store
+
+# Ignorar los propios archivos de Docker (no necesitan estar en la imagen)
+Dockerfile
+.dockerignore
+
+# Ignorar archivos de texto que no son de la app
+README.md
+estructura.txt
+estructura1.txt

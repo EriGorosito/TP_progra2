@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # 1. Un servicio "temporal" que solo inicializa la DB
+  db-init:
+    build: .  # Usa el mismo Dockerfile que la API
+    volumes:
+      - ./petcare:/app/petcare
+      - db_data:/app # Monta el volumen donde se guardará petcare.db
+    # Ejecuta tu script de inicialización
+    command: python init_db.py
+
+  # 2. El servicio principal de tu API
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./petcare:/app/petcare # Sincroniza tu código para hot-reload
+      - db_data:/app # Monta el MISMO volumen para que la API vea el archivo .db
+    depends_on:
+      - db-init # Le dice a la API que espere a que el script db-init termine
+
+volumes:
+  # Define el volumen que persistirá los datos
+  db_data:
