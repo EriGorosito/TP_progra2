@@ -1,3 +1,4 @@
+#petcare/core/map_services.py
 import requests
 import math
 
@@ -38,7 +39,7 @@ def distancia_geodesica(origen, destino):
 
     R = 6371  # km
     dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(destino[1] - origen[1])
+    dlon = math.radians(lon2 - lon1)
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1))*math.cos(math.radians(lat2))*math.sin(dlon/2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     return R * c
