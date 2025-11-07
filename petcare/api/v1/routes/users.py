@@ -80,17 +80,17 @@ def login_for_access_token(
     
     return {"access_token": access_token, "token_type": "bearer"}
 
-@user_router.put("/{user_id}/direccion", status_code=status.HTTP_200_OK)
-def update_direccion(
-    user_id: int,
-    payload: UserUpdateDireccion,
-    db: Session = Depends(get_db)
-):
-    return update_user_address(
-        db=db,
-        user_id=user_id,
-        direccion=payload.direccion
-    )
+# @user_router.put("/actualizar_direccion", status_code=status.HTTP_200_OK)
+# def update_direccion(
+#     user_id: int,
+#     payload: UserUpdateDireccion,
+#     db: Session = Depends(get_db)
+# ):
+#     return update_user_address(
+#         db=db,
+#         user_id=user_id,
+#         direccion=payload.direccion
+#     )
 # # petcare/api/v1/routes/users.py
 # from datetime import datetime, timedelta, timezone
 # from fastapi import APIRouter, HTTPException, status, Depends

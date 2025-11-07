@@ -37,8 +37,9 @@ def create_user_account(db: Session, user_data: UserCreate) -> UsuarioModel:
     contrasena_hash = get_password_hash(user_data.contrasena)
 
     # 3. geocode
-    coords = GeoService.geocode(user_data.address)
-    raise HTTPException(
+    coords = GeoService.geocode(user_data.direccion)
+    if not coords:
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No se encontró la dirección. Por favor verifique o ingrese otra."
         )
@@ -55,7 +56,7 @@ def create_user_account(db: Session, user_data: UserCreate) -> UsuarioModel:
         email=user_data.email,
         contrasena_hash=contrasena_hash,  # <- Usamos el hash seguro
         tipo=user_data.tipo.lower(), # Guarda 'cliente' o 'cuidador'
-        address=user_data.direccion,
+        direccion=user_data.direccion,
         lat=lat,
         lon=lon,
         map_url=map_url
