@@ -5,8 +5,8 @@ from petcare.schemas.pet_schema import PetOut
 from petcare.schemas.user_schema import UserOut
 
 class ReservaCreate(BaseModel):
-    mascotas: List[PetOut]
-    cuidador: UserOut
+    mascotas_ids: List[int]
+    cuidador_id: int
     fecha_inicio: date
     fecha_fin: date
 

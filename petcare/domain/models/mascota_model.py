@@ -18,3 +18,4 @@ class Mascota(Base):
     # Relación con Usuario
     owner_id = Column(Integer, ForeignKey("usuarios.id"))
     owner = relationship("Usuario")
+
