@@ -17,8 +17,15 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./petcare.db")
 # Para PostgreSQL (más adelante)
 # SQLALCHEMY_DATABASE_URL = "postgresql://usuario:password@localhost/nombre_bd"
 
+connect_args = {}
+# Si la URL de la base de datos es de SQLite, añade el argumento
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+# -----------------------------
+
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args=connect_args  # <-- Pasa los argumentos condicionales
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
