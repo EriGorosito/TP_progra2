@@ -1,3 +1,4 @@
+from petcare.core.resena_services import get_cuidador_puntaje, get_reviews_by_cuidador
 from sqlalchemy.orm import Session
 from datetime import date
 from petcare.domain.models.cuidador_model import Cuidador
@@ -37,6 +38,8 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especie: str, fecha_inic
     resultado = []
     for cuidador in cuidadores:
         usuario = cuidador.usuario
+        promedio = get_cuidador_puntaje(db, usuario.id)
+        resena = get_reviews_by_cuidador(db, usuario.id)
         if usuario.lat is None or usuario.lon is None:
             continue
 
@@ -71,7 +74,9 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especie: str, fecha_inic
             "direccion": usuario.direccion,
             "descripcion": cuidador.descripcion,
             "tarifas": cuidador.tarifas,
-            "distancia_km": round(distancia, 2)
+            "distancia_km": round(distancia, 2),
+            "puntaje": promedio,
+            "reseñas": resena
         })
 
     return sorted(resultado, key=lambda x: x["distancia_km"])
