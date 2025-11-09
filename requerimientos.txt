@@ -1,19 +1,4 @@
-<<<<<<< HEAD
-#Acá deberíamos ir agregando los paquetes que usamos para estar todos con las mismas versiones en nuestros entornos virtuales. 
-pytest
-fastapi
-uvicorn
-python-jose
-passlib
-pydantic
-email-validator
-SQLAlchemy
-alembic
-psycopg2-binary
-requests
-httpx
-apscheduler
-=======
+
 alembic==1.17.1
 annotated-types==0.7.0
 anyio==4.11.0
@@ -52,4 +37,4 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.5.0
 uvicorn==0.38.0
->>>>>>> main
+
