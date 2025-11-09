@@ -23,3 +23,6 @@ Dockerfile
 README.md
 estructura.txt
 estructura1.txt
+
+# Ignorar el archivo de variables de entorno local
+.env
