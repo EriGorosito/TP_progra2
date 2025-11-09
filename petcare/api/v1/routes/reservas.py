@@ -36,6 +36,7 @@ from petcare.core.security import get_current_user
 from petcare.domain.models.usuario_model import Usuario
 from petcare.domain.models.reserva_model import Reserva
 from petcare.domain.models.mascota_model import Mascota
+# from petcare.domain.models.resena_model import Resena
 
 reserva_router = APIRouter(prefix="/reservas", tags=["Reservas"])
 

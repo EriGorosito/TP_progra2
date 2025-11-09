@@ -38,3 +38,4 @@ class Reserva(Base):
     cuidador = relationship("Usuario", foreign_keys=[cuidador_id])
     # mascota = relationship("Mascota", foreign_keys=[mascota_id])
     mascotas = relationship("Mascota", secondary=reserva_mascota)
+    resena = relationship("Resena", back_populates="reserva", uselist=False)

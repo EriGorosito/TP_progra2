@@ -3,9 +3,11 @@ from petcare.api.v1.routes.users import user_router
 from petcare.api.v1.routes.pets import pet_router
 from petcare.api.v1.routes.reservas import reserva_router
 from petcare.api.v1.routes.cuidadores import cuidadores_router
+from petcare.api.v1.routes.resenas import review_router
 
 # --- AÑADIR IMPORTS PARA LA BASE DE DATOS ---
 from petcare.core.database import engine, Base
+from petcare.tasks.scheduler import start_scheduler
 # ---------------------------------------------
 
 # Crea la instancia principal de la app
@@ -13,6 +15,8 @@ app = FastAPI(
     title="PetCare API",
     description="API para conectar dueños de mascotas con cuidadores."
 )
+
+start_scheduler()
 
 # --- FUNCIÓN DE INICIALIZACIÓN DE DB ---
 def initialize_database():
@@ -40,6 +44,7 @@ app.include_router(user_router, prefix="/v1")
 app.include_router(cuidadores_router, prefix="/v1")
 app.include_router(pet_router, prefix="/v1")
 app.include_router(reserva_router, prefix="/v1")
+app.include_router(review_router, prefix="/v1")
 
 
 @app.get("/")

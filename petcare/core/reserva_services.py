@@ -8,6 +8,7 @@ from petcare.domain.models.mascota_model import Mascota
 from petcare.domain.observer import event_manager
 from petcare.core.cuidador_services import cuidador_disponible
 from sqlalchemy.orm import Session
+from petcare.domain.models.resena_model import Resena
 from petcare.domain.models.reserva_model import Reserva, reserva_mascota
 from petcare.domain.models.usuario_model import Usuario
 from fastapi import HTTPException
