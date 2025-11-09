@@ -26,7 +26,7 @@ def initialize_database():
     Base.metadata.create_all(bind=engine)
     print("Estructura de la base de datos verificada y lista.")
 
-# --- EVENTO DE CICLO DE VIDA (Forma Moderna) ---
+# --- EVENTO DE CICLO DE VIDA ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Código que se ejecuta al iniciar:
