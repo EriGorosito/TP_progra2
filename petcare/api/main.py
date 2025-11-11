@@ -4,16 +4,15 @@ from petcare.api.v1.routes.pets import pet_router
 from petcare.api.v1.routes.reservas import reserva_router
 from petcare.api.v1.routes.cuidadores import cuidadores_router
 from petcare.api.v1.routes.resenas import review_router
+
+from contextlib import asynccontextmanager
+
+# --- AÑADIR IMPORTS PARA LA BASE DE DATOS ---
 from petcare.core.database import engine, Base
 from petcare.tasks.scheduler import start_scheduler
-from petcare.tasks.update_reserva import actualizar_reservas_automatica
-import os
-
-# Crea la instancia principal de la app
-app = FastAPI(
-    title="PetCare API",
-    description="API para conectar dueños de mascotas con cuidadores."
-)
+# ---------------------------------------------
+# Para que Base.metadata.create_all() funcione, Base necesita "conocer" estos modelos.
+from petcare.domain.models import usuario_model, cuidador_model, mascota_model, reserva_model, resena_model
 
 
 # --- FUNCIÓN DE INICIALIZACIÓN DE DB ---
@@ -28,18 +27,30 @@ def initialize_database():
     print("Estructura de la base de datos verificada y lista.")
 
 # --- EVENTO DE CICLO DE VIDA ---
-@app.on_event("startup")
-async def startup_event():
-    """
-    Ejecuta la inicialización de la base de datos solo una vez cuando 
-    la aplicación arranca.
-    """
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Código que se ejecuta al iniciar:
+    print("--- Iniciando aplicación ---")
     initialize_database()
+    start_scheduler()
+    print("--- Aplicación lista ---")
     
-    actualizar_reservas_automatica()
+    yield  # La aplicación se ejecuta aquí
+    
+    # Código que se ejecuta al apagar (opcional):
+    print("--- Cerrando aplicación ---")
 
-    if os.getenv("ENV") != "test":
-        start_scheduler()
+
+# Crea la instancia principal de la app
+app = FastAPI(
+    title="PetCare API",
+    description="API para conectar dueños de mascotas con cuidadores.",
+    lifespan=lifespan
+)
+
+start_scheduler()
+
+
 # ---------------------------------
 
 # Incluye los routers

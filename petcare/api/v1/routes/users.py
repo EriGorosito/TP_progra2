@@ -9,6 +9,7 @@ from petcare.schemas.user_schema import UserCreate, UserOut, TokenRequest, Token
 from petcare.core.security import create_access_token, verify_password, ACCESS_TOKEN_EXPIRE_MINUTES
 from petcare.core.user_services import create_user_account, get_user_by_email
 from petcare.core.database import get_db # <-- IMPORTAR LA DEPENDENCIA DE LA DB
+from petcare.core.security import verify_password
 
 # Define el router
 user_router = APIRouter(
@@ -60,9 +61,7 @@ def login_for_access_token(
         )
 
     # 2. Verificar Contraseña (usando la función de seguridad)
-    # Debes asegurarte de importar 'verify_password' de tu security.py.
     # user.contrasena_hash es el hash almacenado en el modelo ORM (Usuario)
-    from petcare.core.security import verify_password # Asegúrate de importar esto
 
     if not verify_password(form_data.contrasena, user.contrasena_hash):
         raise HTTPException(
@@ -71,7 +70,7 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-    # 3. Generar JWT de Acceso (el resto está bien)
+    # 3. Generar JWT de Acceso
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"email": user.email, "user_type": user.tipo}, # <-- Usa user.tipo del ORM

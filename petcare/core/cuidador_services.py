@@ -44,7 +44,13 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fec
     cuidadores = (
         db.query(Cuidador)
         .join(Cuidador.usuario)
+<<<<<<< HEAD
         .filter(especie_filter)
+=======
+        .filter(
+        Cuidador.servicios.op('?')(especie)
+        )
+>>>>>>> origin/main
         .all()
     )
 
