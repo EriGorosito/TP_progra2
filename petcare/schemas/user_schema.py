@@ -6,18 +6,15 @@ from typing import Literal
 class UserCreate(BaseModel):
     # Usamos EmailStr para una validación de formato automática
     email: EmailStr
-    # El nombre ahora es un campo de entrada
     nombre: str
-    # En un API real, se manejaría de forma más segura (ej. no retornarla)
     contrasena: str
     # Literal limita las opciones a 'Cliente' o 'Cuidador'
-    tipo: Literal["Cliente", "Cuidador"] 
-    #NUEVO
+    tipo: Literal["Cliente", "Cuidador", "cliente", "cuidador"]
     direccion: str 
 
 # Modelo Pydantic para los datos que la API retornará (respuesta exitosa)
 class UserOut(BaseModel):
-    id: int # Asumiremos un ID (clave primaria) de la DB
+    id: int 
     nombre: str
     email: EmailStr
     tipo: str
@@ -37,7 +34,7 @@ class TokenRequest(BaseModel):
     email: EmailStr
     contrasena: str
 
-# Nuevo: Esquema para la respuesta del Login (el JWT)
+# Esquema para la respuesta del Login (el JWT)
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer" # Es estándar que sea un token de tipo 'bearer'
