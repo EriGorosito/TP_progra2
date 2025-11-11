@@ -28,8 +28,8 @@ El proyecto sigue una arquitectura modular y utiliza **pytest** para realizar pr
 
 #### 🐶 Gestión de mascotas(Cliente) 
 - El cliente debe poder registrar mascotas, ingresando nombre, especie, raza(si la tiene), edad, peso y características especiales.
-- El sistema debe permitir subir una foto de la mascota
-- El cliente debe poder editar o eliminar el perfil de una mascota.
+- El cliente debe poder ver sus mascotas 
+
 
 #### 👤 Gestión de cuidadores
 - El cuidador debe poder crear su perfil, completando descripción, experiencia y servicios ofrecidos
@@ -66,7 +66,7 @@ Precondición: Usuario registrado como Cliente
 Flujo Principal:
     1. Cliente accede a "Mis Mascotas"
     2. Sistema muestra formulario (nombre, especie, raza, edad, peso, características especiales)
-    3. Cliente completa información y sube foto
+    3. Cliente completa información 
     4. Sistema valida y guarda el perfil
     5. Sistema confirma creación exitosa
 
@@ -77,7 +77,7 @@ Flujo Principal:
     1. Cuidador accede a "Completar Mi Perfil"
     2. Sistema muestra secciones:
         * Información personal (descripción, experiencia)
-        * Servicios ofrecidos (alimentación, paseos, alojamiento)
+        * Servicio mascotas (perro, gato, etc.)
         * Tarifas por servicio
         * Zona de cobertura
         * Disponibilidad (calendario)
@@ -92,9 +92,9 @@ Flujo Principal:
     1. Cliente selecciona "Buscar Cuidadores"
     2. Sistema muestra filtros: servicio, fecha, ubicación, tipo de mascota
     3. Cliente aplica filtros
-    4. Sistema consulta API de Google Maps para radio de búsqueda
-    5. Sistema muestra resultados en mapa y lista
-    6. Cliente puede ver perfiles, reviews y disponibilidad
+    4. Sistema ejecuta un radio de búsqueda
+    5. Sistema muestra resultados en una lista
+    6. Cliente puede ver perfiles, reseñas y distancia
     
 5. Crear Reserva (Complejo)
 Actor: Cliente
@@ -156,8 +156,7 @@ Modelos ORM que representan entidades en la base de datos.
 
 📁 schemas/
 
-Modelos Pydantic usados para validar y estructurar datos de entrada y salida en la API
-(p. ej., UserCreate, TaskRead).
+Modelos Pydantic usados para validar y estructurar datos de entrada y salida en la API.
 
 📁 services/
 
