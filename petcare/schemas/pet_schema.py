@@ -11,6 +11,7 @@ class PetBase(BaseModel):
     peso: float
     caracteristicas_especiales: Optional[str] = None
 
+
 # Esquema para la creación (lo que envía el usuario)
 class PetCreate(PetBase):
     pass # Por ahora es igual a PetBase

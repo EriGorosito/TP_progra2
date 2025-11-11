@@ -5,8 +5,8 @@ import pytest
 # --- TEST: registro exitoso ---
 def test_register_user_success(client):
     payload = {
-        "nombre": "Erika",
-        "email": "erika@mail.com",
+        "nombre": "Laura",
+        "email": "laura@mail.com",
         "contrasena": "123456",
         "tipo": "cuidador",
         "direccion": "Av. Corrientes 1200, Buenos Aires"
@@ -18,16 +18,16 @@ def test_register_user_success(client):
     assert response.status_code == 201
     data = response.json()
 
-    assert data["email"] == "erika@mail.com"
-    assert data["nombre"] == "Erika"
+    assert data["email"] == "laura@mail.com"
+    assert data["nombre"] == "Laura"
     assert "id" in data
 
 
 def test_register_user_conflict_email(seeded_client):
     # Mismo email que el usuario anterior
     payload = {
-        "nombre": "Erika",
-        "email": "erika@mail.com",
+        "nombre": "Laura",
+        "email": "laura@mail.com",
         "contrasena": "password123",
         "tipo": "cuidador",
         "direccion": "Av. Corrientes 1234, Buenos Aires"
@@ -45,7 +45,7 @@ def test_register_user_conflict_email(seeded_client):
 # --- TEST: login exitoso ---
 def test_login_success(seeded_client):
     payload = {
-        "email": "erika@mail.com",
+        "email": "laura@mail.com",
         "contrasena": "password123"
     }
 

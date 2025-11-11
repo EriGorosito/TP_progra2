@@ -94,6 +94,38 @@ def create_reserva(
 
     return nueva_reserva
 
+def actualizar_estado_reserva(
+    db: Session,
+    reserva_id: int,
+    nuevo_estado: str,
+    current_user: Usuario
+) -> Reserva:
+    """Lógica de negocio para cambiar el estado de una reserva."""
+    reserva = db.query(Reserva).filter(Reserva.id == reserva_id).first()
+
+
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva no encontrada.")
+
+
+    if reserva.cuidador_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No autorizado para modificar esta reserva.")
+
+
+    if reserva.estado in ("rechazada", "completada"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede modificar una reserva {reserva.estado}."
+        )
+
+
+    reserva.estado = nuevo_estado
+    db.commit()
+    db.refresh(reserva)
+
+
+    return reserva
+
 
 # def get_reservas_by_cliente(cliente: Cliente) -> List[Reserva]:
 #     return [r for r in MOCK_RESERVAS if r.cliente.id == cliente.id]

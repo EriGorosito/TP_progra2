@@ -1,9 +1,11 @@
 from petcare.core.resena_services import get_cuidador_puntaje, get_reviews_by_cuidador
 from sqlalchemy.orm import Session
+
 from datetime import date
 from petcare.domain.models.cuidador_model import Cuidador
 from petcare.domain.models.reserva_model import Reserva
 from petcare.core.map_services import distancia_geodesica
+from sqlalchemy import or_
 
 
 def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha_fin: date) -> bool:
@@ -21,17 +23,28 @@ def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha
     return len(reservas) == 0
 
 
-def buscar_cuidadores_disponibles(db: Session, cliente, especie: str, fecha_inicio: date, fecha_fin: date, radio_km: float = None):
+def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fecha_inicio: date, fecha_fin: date, radio_km: float = None):
     if not cliente.lat or not cliente.lon:
         raise ValueError("El cliente no tiene coordenadas registradas.")
 
-    # Buscar cuidadores que cuiden esa especie
+    if isinstance(especies, list):
+        especie_filter = or_(*[Cuidador.servicios.contains(e) for e in especies])
+    else:
+        especie_filter = Cuidador.servicios.contains(especies)
+
+    # cuidadores = (
+    #     db.query(Cuidador)
+    #     .join(Cuidador.usuario)
+    #     .filter(
+    #     Cuidador.servicios.op('?')(especie_filter)
+    #     )
+    #     .all()
+    # )
+
     cuidadores = (
         db.query(Cuidador)
         .join(Cuidador.usuario)
-        .filter(
-        Cuidador.servicios.op('?')(especie)
-        )
+        .filter(especie_filter)
         .all()
     )
 

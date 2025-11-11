@@ -36,6 +36,11 @@ from petcare.core.security import get_current_user
 from petcare.domain.models.usuario_model import Usuario
 from petcare.domain.models.reserva_model import Reserva
 from petcare.domain.models.mascota_model import Mascota
+from datetime import date
+from typing import List
+from petcare.core.reserva_services import actualizar_estado_reserva
+from fastapi import Body
+
 # from petcare.domain.models.resena_model import Resena
 
 reserva_router = APIRouter(prefix="/reservas", tags=["Reservas"])
@@ -93,3 +98,46 @@ async def aceptar_reserva(
 
     event_manager.notify("reserva_aceptada", {"reserva": reserva})
     return {"mensaje": "Reserva confirmada con éxito", "reserva": reserva}
+
+
+@reserva_router.get("/mias", response_model=List[ReservaOut])
+def obtener_reservas_actuales(
+    estado: str | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    query = db.query(Reserva)
+
+
+    if current_user.tipo.lower() == "cliente":
+        query = query.filter(Reserva.cliente_id == current_user.id)
+    else:
+        query = query.filter(Reserva.cuidador_id == current_user.id)
+
+
+    if estado:
+        query = query.filter(Reserva.estado == estado)
+    if desde and hasta:
+        query = query.filter(Reserva.fecha_inicio >= desde, Reserva.fecha_fin <= hasta)
+
+
+    return query.all()
+
+
+
+
+@reserva_router.patch("/{reserva_id}/estado", response_model=ReservaOut)
+def actualizar_estado(
+    reserva_id: int,
+    estado_reserva: str,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    return actualizar_estado_reserva(
+        db=db,
+        reserva_id=reserva_id,
+        nuevo_estado=estado_reserva,
+        current_user=current_user
+    )

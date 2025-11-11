@@ -1,6 +1,7 @@
 # petcare/core/security.py 
 
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from typing import Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -9,6 +10,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from passlib.context import CryptContext 
 from sqlalchemy.orm import Session
+from petcare.core.database import get_db
 
 # # Importa tu servicio de usuario para buscar al usuario por email
 # from petcare.core.user_services import get_user_by_email
@@ -30,7 +32,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # Esto debe ser una variable de entorno en producción..
 SECRET_KEY = "SUPER_SECRETO_PARA_PRUEBAS_NO_USAR_EN_PROD" 
 ALGORITHM = "HS256" # Algoritmo de hashing para el token
-
 # Define cuánto durará el token antes de expirar (ej: 15 minutos)
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
@@ -57,12 +58,17 @@ class TokenData(BaseModel):
     email: str | None = None
     user_type: str | None = None
 
+
 # "tokenUrl" le dice a Swagger/docs que debe usar este endpoint para obtener el token.
 # Tiene que coincidir con la ruta de login -> /v1/users/login
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/users/login")
+# from petcare.core.user_services import get_user_by_email
 
 security = HTTPBearer()
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db) # ⬅️ AÑADIR ESTO: Permitir inyección de dependencia
+):
     """
     Dependencia de FastAPI:
     1. Recibe un token del header "Authorization: Bearer <token>".
@@ -70,53 +76,78 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     3. Busca al usuario en la "DB".
     4. Devuelve el objeto Usuario o lanza una excepción.
     """
-    from petcare.core.user_services import get_user_by_email
-    from petcare.core.database import get_db
-    # from sqlalchemy.orm import Sessionependencia
-    # Nota: get_db es un generador, así que tenemos que manejarlo manualmente aquí.
-    # En un proyecto grande, se usa una clase/función auxiliar para esto, 
-    # pero este enfoque es simple y rompe el ciclo.
-    token = credentials.credentials  
+    # ⚠️ Quita los imports internos, ahora dependes de los de arriba o de la firma de la función.
+    from petcare.core.user_services import get_user_by_email # Puedes mantener este import interno por simplicidad si rompe el ciclo.
 
+    token = credentials.credentials
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudieron validar las credenciales",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
-    db: Session | None = None
-    try:
-        db_generator = get_db()
-        db = next(db_generator) # Obtiene la sesión
-    except Exception:
-        # En caso de que falle la inicialización de DB (poco probable aquí)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al conectar con la base de datos."
-        )
- 
-         
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("email")
+        email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
 
         token_data = TokenData(email=email, user_type=payload.get("tipo"))
 
+        # 🎯 Usa la sesión inyectada
+        user = get_user_by_email(db=db, email=token_data.email) 
+        
+        if user is None:
+            raise credentials_exception
+
+        return user
+
     except JWTError:
         raise credentials_exception
+
+    finally:
+        if db:
+            db.close()
+
+    # db: Session | None = None
+    # try:
+    #     db_generator = get_db()
+    #     db = next(db_generator) # Obtiene la sesión
+    # except Exception:
+    #     # En caso de que falle la inicialización de DB (poco probable aquí)
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         detail="Error al conectar con la base de datos."
+    #     )
+ 
+         
+    # try:
+    #     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    #     email: str = payload.get("sub")
+    #     if email is None:
+    #         raise credentials_exception
+
+    #     token_data = TokenData(email=email, user_type=payload.get("tipo"))
+
+    # except JWTError:
+    #     raise credentials_exception
     
 
-    db_generator = get_db()
-    db = next(db_generator)
+    # # db_generator = get_db()
+    # # db = next(db_generator)
 
-    user = get_user_by_email(db=db, email=token_data.email)
-    if user is None:
-        raise credentials_exception
+    # user = get_user_by_email(db=db, email=token_data.email)
+    # if user is None:
+    #     raise credentials_exception
 
-    db.close()
-    return user
+    # db.close()
+    # return user
+
+
+
+
+
+
     # # Asegúrate de que db existe antes de usarlo
     # if db is None:
     #     raise credentials_exception
