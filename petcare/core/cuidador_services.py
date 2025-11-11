@@ -30,7 +30,7 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especie: str, fecha_inic
         db.query(Cuidador)
         .join(Cuidador.usuario)
         .filter(
-            Cuidador.servicios.contains(especie)
+        Cuidador.servicios.op('?')(especie)
         )
         .all()
     )

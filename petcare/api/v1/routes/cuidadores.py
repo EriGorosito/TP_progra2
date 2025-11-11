@@ -16,6 +16,10 @@ cuidadores_router = APIRouter(
 
 @cuidadores_router.post("/completar/{usuario_id}")
 def completar_datos_cuidador(usuario_id: int, datos: CuidadorCreate,  current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+
+    """
+    Completa los datos y la descripción del cuidador autenticado. 
+    """
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
