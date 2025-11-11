@@ -9,7 +9,7 @@ from petcare.schemas.resena_schemas import ReviewCreate
 
 def create_review(db: Session, data: ReviewCreate):
 
-    actualizar_reservas_finalizadas()
+    actualizar_reservas_finalizadas(db)
     reserva = db.query(Reserva).filter(Reserva.id == data.reserva_id).first()
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")

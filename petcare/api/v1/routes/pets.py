@@ -2,12 +2,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.orm import Session
-
 from ....schemas.pet_schema import PetCreate, PetOut
 from petcare.core import pet_services
 from ....domain.models.usuario_model import Usuario
 from ....core.database import get_db
-# Importa tu "cerradura" de seguridad
 from ....core.security import get_current_user
 
 pet_router = APIRouter(
@@ -22,7 +20,6 @@ pet_router = APIRouter(
 )
 async def create_new_pet(
     pet_data: PetCreate,
-    # ¡LA DEPENDENCIA! FastAPI inyectará aquí al usuario logueado
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user) 
 ):

@@ -45,7 +45,8 @@ def completar_datos_cuidador(usuario_id: int, datos: CuidadorCreate,  current_us
 def obtener_cuidadores_cercanos(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
-    especie: str = Query(...),
+    # especie: str = Query(...),
+    especies: list[str] = Query(..., description="Lista de especies: perro,gato,etc."),
     fecha_inicio: date = Query(..., description="Fecha de inicio formato: Año-Mes-Dia"),
     fecha_fin: date = Query(..., description="Fecha de inicio formato: Año-Mes-Dia"),
     radio_km: float = Query(default=None, description="Radio máximo de búsqueda en km (opcional)")
@@ -56,7 +57,7 @@ def obtener_cuidadores_cercanos(
     """
 
     # 1️⃣ Validar que sea cliente
-    if current_user.tipo != "cliente":
+    if current_user.tipo.lower() != "cliente":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Solo los clientes pueden buscar cuidadores cercanos."
@@ -69,7 +70,7 @@ def obtener_cuidadores_cercanos(
         )
 
     try:
-        resultado = buscar_cuidadores_disponibles(db, current_user, especie, fecha_inicio, fecha_fin, radio_km)
+        resultado = buscar_cuidadores_disponibles(db, current_user, especies, fecha_inicio, fecha_fin, radio_km)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
