@@ -27,30 +27,24 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fec
     if not cliente.lat or not cliente.lon:
         raise ValueError("El cliente no tiene coordenadas registradas.")
 
-    # Buscar cuidadores que cuiden esa especie
-    # cuidadores = (
-    #     db.query(Cuidador)
-    #     .join(Cuidador.usuario)
-    #     .filter(
-    #         Cuidador.servicios.contains(especie)
-    #     )
-    #     .all()
-    # )
     if isinstance(especies, list):
         especie_filter = or_(*[Cuidador.servicios.contains(e) for e in especies])
     else:
         especie_filter = Cuidador.servicios.contains(especies)
 
+    # cuidadores = (
+    #     db.query(Cuidador)
+    #     .join(Cuidador.usuario)
+    #     .filter(
+    #     Cuidador.servicios.op('?')(especie_filter)
+    #     )
+    #     .all()
+    # )
+
     cuidadores = (
         db.query(Cuidador)
         .join(Cuidador.usuario)
-<<<<<<< HEAD
         .filter(especie_filter)
-=======
-        .filter(
-        Cuidador.servicios.op('?')(especie)
-        )
->>>>>>> origin/main
         .all()
     )
 

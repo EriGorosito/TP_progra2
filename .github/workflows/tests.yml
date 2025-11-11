@@ -41,6 +41,4 @@ jobs:
 
       - name: Run pytest
         run: |
-          # Opcional: crear DB local si tu app lo necesita (no necesario con sqlite:///:memory:)
-          # python init_db.py
           pytest -v --maxfail=3
