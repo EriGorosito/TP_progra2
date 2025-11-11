@@ -172,7 +172,7 @@ Contiene tareas automatizadas o programadas.
 
 Inicializa FastAPI, importa rutas, configura eventos y middleware.
 
-## Cómo desplegar y probar la API
+## 🚀 Cómo desplegar y probar la API
 
 Esta sección detalla los pasos necesarios para inicializar, ejecutar y validar localmente la PetCare API.
 
