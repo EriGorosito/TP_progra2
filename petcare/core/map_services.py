@@ -1,4 +1,3 @@
-#petcare/core/map_services.py
 import requests
 import math
 
@@ -31,7 +30,6 @@ class GeoService:
 
         return float(data[0]["lat"]), float(data[0]["lon"])
     
-    
 
 def distancia_geodesica(origen, destino):
     lat1, lon1 = origen
@@ -44,14 +42,4 @@ def distancia_geodesica(origen, destino):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     return R * c
 
-# def calcular_distancia_km(origen, destino):
-#     """
-#     Mock temporal de cálculo de distancia.
-#     En el futuro usará la API real (por ejemplo, Google Maps).
-#     """
-#     if not origen or not destino:
-#         return 9999  # Devuelve una distancia grande si falta info
 
-#     # Simula una distancia aleatoria entre 1 y 20 km
-#     import random
-#     return round(random.uniform(1, 20), 2)

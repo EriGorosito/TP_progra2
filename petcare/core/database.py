@@ -1,11 +1,9 @@
-# petcare/core/database.py
-
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Carga las variables del archivo .env (si existe)
+# Carga las variables del archivo .env 
 load_dotenv()
 
 

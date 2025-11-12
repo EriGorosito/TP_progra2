@@ -1,24 +1,29 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+
+# Importaciones locales de rutas
 from petcare.api.v1.routes.users import user_router
 from petcare.api.v1.routes.pets import pet_router
 from petcare.api.v1.routes.reservas import reserva_router
 from petcare.api.v1.routes.cuidadores import cuidadores_router
 from petcare.api.v1.routes.resenas import review_router
 
-from contextlib import asynccontextmanager
-
-# --- AÑADIR IMPORTS PARA LA BASE DE DATOS ---
+# Importaciones para la base de datos y tareas
 from petcare.core.database import engine, Base
 from petcare.tasks.scheduler import start_scheduler
-# ---------------------------------------------
-# Para que Base.metadata.create_all() funcione, Base necesita "conocer" estos modelos.
-from petcare.domain.models import usuario_model, cuidador_model, mascota_model, reserva_model, resena_model
+
+# Importación de modelos para que Base.metadata.create_all() los conozca
+from petcare.infraestructura.models import (
+    usuario_model,
+    mascota_model,
+    reserva_model,
+    resena_model,
+)
 
 
-# --- FUNCIÓN DE INICIALIZACIÓN DE DB ---
 def initialize_database():
     """
-    Función que asegura que todas las tablas ORM definidas 
+    Función que asegura que todas las tablas ORM definidas
     en Base se creen en la DB si aún no existen.
     """
     print("Iniciando la conexión a la base de datos...")
@@ -26,7 +31,7 @@ def initialize_database():
     Base.metadata.create_all(bind=engine)
     print("Estructura de la base de datos verificada y lista.")
 
-# --- EVENTO DE CICLO DE VIDA ---
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Código que se ejecuta al iniciar:
@@ -34,10 +39,10 @@ async def lifespan(app: FastAPI):
     initialize_database()
     start_scheduler()
     print("--- Aplicación lista ---")
-    
-    yield  # La aplicación se ejecuta aquí
-    
-    # Código que se ejecuta al apagar (opcional):
+
+    yield  
+
+    # Código que se ejecuta al apagar:
     print("--- Cerrando aplicación ---")
 
 
@@ -48,10 +53,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Inicializa el scheduler al inicio de la aplicación
 start_scheduler()
-
-
-# ---------------------------------
 
 # Incluye los routers
 app.include_router(user_router, prefix="/v1")
@@ -61,8 +64,6 @@ app.include_router(reserva_router, prefix="/v1")
 app.include_router(review_router, prefix="/v1")
 
 
-
 @app.get("/")
 def read_root():
     return {"message": "Bienvenido a PetCare API. Ve a /docs para ver la documentación."}
-

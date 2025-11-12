@@ -1,66 +1,85 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from datetime import date
+
+# Importaciones locales
 from petcare.core.database import get_db
-from petcare.domain.models.usuario_model import Usuario
-from petcare.domain.models.cuidador_model import Cuidador
-from petcare.schemas.cuidador_schema import CuidadorCreate
 from petcare.core.security import get_current_user
-# from petcare.core.map_services import distancia_geodesica
 from petcare.core.cuidador_services import buscar_cuidadores_disponibles
+from petcare.infraestructura.models.usuario_model import Usuario
+from petcare.infraestructura.models.usuario_model import Cuidador
+from petcare.schemas.cuidador_schema import CuidadorCreate
+
 
 cuidadores_router = APIRouter(
     prefix="/cuidadores",
     tags=["Cuidadores"]
 )
 
-@cuidadores_router.post("/completar/{usuario_id}")
-def completar_datos_cuidador(usuario_id: int, datos: CuidadorCreate,  current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
 
+@cuidadores_router.post("/completar/{usuario_id}")
+def completar_datos_cuidador(
+    usuario_id: int,
+    datos: CuidadorCreate,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Completa los datos y la descripción del cuidador autenticado. 
+    Completa los datos y la descripción del cuidador autenticado.
     """
+    # 1. Validar Usuario
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if usuario.tipo != "cuidador":
         raise HTTPException(status_code=400, detail="El usuario no es cuidador")
-    if usuario.cuidador:
-        raise HTTPException(status_code=400, detail="El cuidador ya tiene datos registrados")
 
-    servicios_serializables = [s.value if hasattr(s, 'value') else str(s) for s in datos.servicios]
+    # 2. Obtener Cuidador 
+    cuidador = db.query(Cuidador).filter(Cuidador.id == usuario_id).first()
+    if not cuidador:
+        raise HTTPException(status_code=404, detail="Cuidador no encontrado")
 
-    dias_serializables = [str(d) for d in datos.dias_no_disponibles] if datos.dias_no_disponibles else None
+    # 3. Serializar datos para almacenamiento
+    servicios_serializables = [
+        s.value if hasattr(s, 'value') else str(s)
+        for s in datos.servicios
+    ]
 
-    cuidador = Cuidador(
-        usuario_id=usuario.id,
-        descripcion=datos.descripcion,
-        servicios=servicios_serializables,
-        tarifas=datos.tarifas,
-        dias_no_disponibles=dias_serializables
+    dias_serializables = (
+        [str(d) for d in datos.dias_no_disponibles]
+        if datos.dias_no_disponibles else None
     )
 
-    db.add(cuidador)
+    # 4. Actualizar atributos
+    cuidador.descripcion = datos.descripcion
+    cuidador.servicios = servicios_serializables
+    cuidador.tarifas = datos.tarifas
+    cuidador.dias_no_disponibles = dias_serializables
+
+    # 5. Persistir cambios
     db.commit()
     db.refresh(cuidador)
+
     return {"mensaje": "Datos del cuidador completados correctamente"}
+
 
 @cuidadores_router.get("/cercanos")
 def obtener_cuidadores_cercanos(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
-    # especie: str = Query(...),
-    especies: list[str] = Query(..., description="Lista de especies: perro,gato,etc."),
+    especies: list[str] = Query(..., description="Lista de especies: perro, gato, etc."),
     fecha_inicio: date = Query(..., description="Fecha de inicio formato: Año-Mes-Dia"),
-    fecha_fin: date = Query(..., description="Fecha de inicio formato: Año-Mes-Dia"),
-    radio_km: float = Query(default=None, description="Radio máximo de búsqueda en km (opcional)")
+    fecha_fin: date = Query(..., description="Fecha de fin formato: Año-Mes-Dia"),
+    radio_km: float = Query(
+        default=None, description="Radio máximo de búsqueda en km (opcional)"
+    )
 ):
     """
     Devuelve cuidadores cercanos al cliente autenticado.
     Si se pasa `radio_km`, solo devuelve los dentro de ese radio.
     """
-
-    # 1️⃣ Validar que sea cliente
+    # 1. Validar que sea cliente
     if current_user.tipo.lower() != "cliente":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -73,61 +92,22 @@ def obtener_cuidadores_cercanos(
             detail="El cliente no tiene coordenadas registradas."
         )
 
+    # 2. Llamar al servicio de búsqueda
     try:
-        resultado = buscar_cuidadores_disponibles(db, current_user, especies, fecha_inicio, fecha_fin, radio_km)
+        resultado = buscar_cuidadores_disponibles(
+            db, current_user, especies, fecha_inicio, fecha_fin, radio_km
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     if not resultado:
         return {"mensaje": "No se encontraron cuidadores disponibles en las fechas solicitadas."}
 
+    # 3. Formatear respuesta
     return {
         "cliente": current_user.nombre,
         "cantidad_resultados": len(resultado),
         "cuidadores_disponibles": resultado
     }
-    # # 2️⃣ Obtener todos los cuidadores con sus datos de usuario (JOIN)
-    # cuidadores = (
-    #     db.query(Cuidador)
-    #     .join(Usuario)
-    #     .filter(Usuario.tipo == "cuidador")
-    #     .all()
-    # )
 
-    # if not cuidadores:
-    #     raise HTTPException(status_code=404, detail="No hay cuidadores registrados.")
 
-    # # 3️⃣ Calcular distancia
-    # resultado = []
-    # for cuidador in cuidadores:
-    #     usuario = cuidador.usuario  # gracias al relationship
-    #     if usuario.lat is not None and usuario.lon is not None:
-    #         distancia = distancia_geodesica(
-    #             (current_user.lat, current_user.lon),
-    #             (usuario.lat, usuario.lon)
-    #         )
-    #         if radio_km is None or distancia <= radio_km:
-    #             resultado.append({
-    #                 "id": usuario.id,
-    #                 "nombre": usuario.nombre,
-    #                 "email": usuario.email,
-    #                 "direccion": usuario.direccion,
-    #                 "map_url": usuario.map_url,
-    #                 "descripcion": cuidador.descripcion,
-    #                 "servicios": cuidador.servicios,
-    #                 "tarifas": cuidador.tarifas,
-    #                 "dias_no_disponibles": cuidador.dias_no_disponibles,
-    #                 "distancia_km": round(distancia, 2)
-    #             })
-
-    # # 4️⃣ Ordenar por distancia ascendente
-    # resultado.sort(key=lambda x: x["distancia_km"])
-
-    # if not resultado:
-    #     return {"mensaje": "No se encontraron cuidadores dentro del radio especificado."}
-
-    # return {
-    #     "cliente": current_user.nombre,
-    #     "cantidad_resultados": len(resultado),
-    #     "cuidadores_cercanos": resultado
-    # }
