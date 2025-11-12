@@ -6,6 +6,7 @@ from petcare.domain.models.cuidador_model import Cuidador
 from petcare.domain.models.reserva_model import Reserva
 from petcare.core.map_services import distancia_geodesica
 from sqlalchemy import or_
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha_fin: date) -> bool:
@@ -27,19 +28,29 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fec
     if not cliente.lat or not cliente.lon:
         raise ValueError("El cliente no tiene coordenadas registradas.")
 
-    if isinstance(especies, list):
-        especie_filter = or_(*[Cuidador.servicios.contains(e) for e in especies])
-    else:
-        especie_filter = Cuidador.servicios.contains(especies)
+    # Obtenemos el nombre del dialecto de la sesión de la BD
+    dialecto = db.bind.dialect.name
 
-    # cuidadores = (
-    #     db.query(Cuidador)
-    #     .join(Cuidador.usuario)
-    #     .filter(
-    #     Cuidador.servicios.op('?')(especie_filter)
-    #     )
-    #     .all()
-    # )
+    # onstruimos la lista de filtros de especies
+    filtros_especie = []
+    
+    # Asegurarnos de que 'especies' sea siempre una lista
+    if not isinstance(especies, list):
+        especies = [especies]
+
+    # Creamos el filtro correcto basado en el dialecto
+    if dialecto == "postgresql":
+        # Usa el operador '?' de JSONB, que funciona en Supabase
+        for e in especies:
+            filtros_especie.append(Cuidador.servicios.cast(JSONB).op('?')(e))
+    else:
+        # Usa .contains() (LIKE), que funciona en SQLite
+        for e in especies:
+            filtros_especie.append(Cuidador.servicios.contains(e))
+    
+    # Combinamos todos los filtros con un "OR"
+    # (Ej. WHERE servicios ? 'Perro' OR servicios ? 'Gato')
+    especie_filter = or_(*filtros_especie)
 
     cuidadores = (
         db.query(Cuidador)
