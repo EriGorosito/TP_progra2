@@ -10,7 +10,7 @@ load_dotenv()
 
 
 # Base de datos SQLite local
-# 1. Busca la variable de entorno 'DATABASE_URL' (que pondrás en Render)
+# 1. Busca la variable de entorno 'DATABASE_URL'
 # 2. Si no la encuentra, usa la base de datos local 'petcare.db' por defecto
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./petcare.db")
 
