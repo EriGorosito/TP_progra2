@@ -4,14 +4,8 @@ from sqlalchemy.orm import relationship
 #Importaciones locales
 from petcare.core.database import Base
 from .mascota_model import Mascota
+from .tablas_asociacion import reserva_mascota
 
-# Tabla intermedia para la relación muchos-a-muchos
-reserva_mascota = Table(
-    "reserva_mascota",
-    Base.metadata,
-    Column("reserva_id", Integer, ForeignKey("reservas.id")),
-    Column("mascota_id", Integer, ForeignKey("mascotas.id"))
-)
 
 
 class Reserva(Base):

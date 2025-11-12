@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 from petcare.core.database import Base
 from petcare.domain.especie import Especie
-from .reserva_model import reserva_mascota
+from .tablas_asociacion import reserva_mascota
 
 class Mascota(Base):
     __tablename__ = "mascotas"
