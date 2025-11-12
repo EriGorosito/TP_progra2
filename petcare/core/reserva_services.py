@@ -59,7 +59,7 @@ def create_reserva(
         if event_manager:
             # --- ¡ESTE ES EL PAYLOAD COMPLETO! ---
             # Extraemos los datos simples ANTES de que los objetos mueran.
-            data_payload = {
+            '''data_payload = {
                 # Datos para la notificación "reserva_creada"
                 "cliente_id": cliente.id,
                 "cliente_nombre": cliente.nombre, # <-- ¡La pieza que faltaba!
@@ -70,10 +70,11 @@ def create_reserva(
                 "reserva_id": nueva_reserva.id,
                 "fecha_inicio_str": nueva_reserva.fecha_inicio.isoformat(),
                 "estado": nueva_reserva.estado
-            }
+            }'''
             # Pasamos el diccionario de datos simples
-            event_manager.notify("reserva_creada", data_payload)
+            #event_manager.notify("reserva_creada", data_payload)
 
+            print("RESERVA CREADA, NOTIFICACIÓN COMENTADA (PRUEBA DE HUMO)") # Añade esto
         return nueva_reserva
 
     except Exception as e:
