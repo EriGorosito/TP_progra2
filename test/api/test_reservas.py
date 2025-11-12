@@ -1,11 +1,15 @@
 from datetime import date, timedelta
 
+def login_and_get_token(client, email, contrasena):
+    """Helper para loguear y obtener el token."""
+    resp = client.post("/v1/users/login", json={"email": email, "contrasena": contrasena})
+    assert resp.status_code == 200, f"Error al loguear {email}: {resp.text}"
+    return resp.json()["access_token"]
+
 def test_crear_reserva_exitosa(seeded_client, crear_cuidador):
     client = seeded_client
-
-    # Login del cliente Claudio
-    login_payload = {"email": "claudio@mail.com", "contrasena": "123"}
-    token = client.post("/v1/users/login", json=login_payload).json()["access_token"]
+# Login del cliente Claudio
+    token = login_and_get_token(client, "claudio@mail.com", "123")
     headers = {"Authorization": f"Bearer {token}"}
 
     # Crear una mascota asociada al cliente
@@ -42,8 +46,8 @@ def test_crear_reserva_exitosa(seeded_client, crear_cuidador):
 def test_crear_reserva_como_cuidador_prohibido(seeded_client):
     client = seeded_client
 
-    login_payload = {"email": "laura@mail.com", "contrasena": "password123"}
-    token = client.post("/v1/users/login", json=login_payload).json()["access_token"]
+    # Login del cuidador Laura
+    token = login_and_get_token(client, "laura@mail.com", "password123")
     headers = {"Authorization": f"Bearer {token}"}
 
     payload = {
@@ -60,8 +64,9 @@ def test_crear_reserva_como_cuidador_prohibido(seeded_client):
 
 def test_listar_reservas_cliente(seeded_client):
     client = seeded_client
-    login_payload = {"email": "claudio@mail.com", "contrasena": "123"}
-    token = client.post("/v1/users/login", json=login_payload).json()["access_token"]
+
+    # Login del cliente Claudio
+    token = login_and_get_token(client, "claudio@mail.com", "123")
     headers = {"Authorization": f"Bearer {token}"}
 
     resp = client.get("/v1/reservas/mias", headers=headers)
@@ -74,8 +79,7 @@ def test_aceptar_reserva_como_cuidador(seeded_client, crear_cuidador):
     client = seeded_client
 
     # --- Login del cliente para crear una reserva ---
-    login_cliente = {"email": "claudio@mail.com", "contrasena": "123"}
-    token_cliente = client.post("/v1/users/login", json=login_cliente).json()["access_token"]
+    token_cliente = login_and_get_token(client, "claudio@mail.com", "123")
     headers_cliente = {"Authorization": f"Bearer {token_cliente}"}
 
     # Crear mascota
@@ -86,7 +90,9 @@ def test_aceptar_reserva_como_cuidador(seeded_client, crear_cuidador):
         "edad": 4,
         "peso": 15
     }
-    pet_id = client.post("/v1/pets/", json=pet_payload, headers=headers_cliente).json()["id"]
+    pet_resp = client.post("/v1/pets/", json=pet_payload, headers=headers_cliente)
+    assert pet_resp.status_code == 201, f"Error creando mascota: {pet_resp.text}"
+    pet_id = pet_resp.json()["id"]
 
     cuidador_id = crear_cuidador["id"]
 
@@ -101,8 +107,7 @@ def test_aceptar_reserva_como_cuidador(seeded_client, crear_cuidador):
     reserva_id = reserva["id"]
 
     # --- Login del cuidador ---
-    login_cuidador = {"email": "laura@mail.com", "contrasena": "password123"}
-    token_cuidador = client.post("/v1/users/login", json=login_cuidador).json()["access_token"]
+    token_cuidador = login_and_get_token(client, "laura@mail.com", "password123")
     headers_cuidador = {"Authorization": f"Bearer {token_cuidador}"}
 
     # Aceptar la reserva
@@ -116,8 +121,7 @@ def test_actualizar_estado_reserva_exitoso(seeded_client, crear_cuidador):
     client = seeded_client
 
     # --- Paso 1: Login del cliente Claudio ---
-    login_cliente = {"email": "claudio@mail.com", "contrasena": "123"}
-    token_cliente = client.post("/v1/users/login", json=login_cliente).json()["access_token"]
+    token_cliente = login_and_get_token(client, "claudio@mail.com", "123")
     headers_cliente = {"Authorization": f"Bearer {token_cliente}"}
 
     # --- Paso 2: Crear mascota asociada al cliente ---

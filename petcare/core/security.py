@@ -1,23 +1,26 @@
-# petcare/core/security.py 
-
 from datetime import datetime, timedelta, timezone
-from typing import Optional
-from typing import Any
+from typing import Optional, Any
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import (
+    HTTPBearer, 
+    HTTPAuthorizationCredentials,
+    OAuth2PasswordBearer
+)
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from passlib.context import CryptContext 
 from sqlalchemy.orm import Session
+
+#Importaciones locales
 from petcare.core.database import get_db
 
-# # Importa tu servicio de usuario para buscar al usuario por email
-# from petcare.core.user_services import get_user_by_email
-# from petcare.domain.usuario import Usuario
+# --- CONFIGURACIÓN DE SEGURIDAD ---
+SECRET_KEY = "SUPER_SECRETO_PARA_PRUEBAS_NO_USAR_EN_PROD" 
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
-
-# --- CÓDIGO DE HASHING DE CONTRASEÑA ---
+# --- HASHING DE CONTRASEÑA ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
@@ -27,17 +30,13 @@ def get_password_hash(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica la contraseña plana contra el hash almacenado."""
     return pwd_context.verify(plain_password, hashed_password)
-# ----------------------------------------
 
-# Esto debe ser una variable de entorno en producción..
-SECRET_KEY = "SUPER_SECRETO_PARA_PRUEBAS_NO_USAR_EN_PROD" 
-ALGORITHM = "HS256" # Algoritmo de hashing para el token
-# Define cuánto durará el token antes de expirar (ej: 15 minutos)
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
+# --- GENERACIÓN Y VALIDACIÓN DE JWT ---
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Genera un JWT de acceso."""
     to_encode = data.copy()
+
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -49,25 +48,17 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     # Crea el token
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-#---
-# Implementar la función de decodificación y validación de token es el siguiente paso.
-
 
 # Define un modelo Pydantic simple para los datos dentro del token
 class TokenData(BaseModel):
     email: str | None = None
     user_type: str | None = None
 
-
-# "tokenUrl" le dice a Swagger/docs que debe usar este endpoint para obtener el token.
-# Tiene que coincidir con la ruta de login -> /v1/users/login
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/users/login")
-# from petcare.core.user_services import get_user_by_email
-
 security = HTTPBearer()
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db) # ⬅️ AÑADIR ESTO: Permitir inyección de dependencia
+    db: Session = Depends(get_db) 
 ):
     """
     Dependencia de FastAPI:
@@ -76,8 +67,8 @@ async def get_current_user(
     3. Busca al usuario en la "DB".
     4. Devuelve el objeto Usuario o lanza una excepción.
     """
-    # ⚠️ Quita los imports internos, ahora dependes de los de arriba o de la firma de la función.
-    from petcare.core.user_services import get_user_by_email # Puedes mantener este import interno por simplicidad si rompe el ciclo.
+    # Evita importacion circular
+    from petcare.core.user_services import get_user_by_email 
 
     token = credentials.credentials
     credentials_exception = HTTPException(
@@ -89,12 +80,12 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
+
         if email is None:
             raise credentials_exception
 
         token_data = TokenData(email=email, user_type=payload.get("tipo"))
 
-        # 🎯 Usa la sesión inyectada
         user = get_user_by_email(db=db, email=token_data.email) 
         
         if user is None:
@@ -109,60 +100,3 @@ async def get_current_user(
         if db:
             db.close()
 
-    # db: Session | None = None
-    # try:
-    #     db_generator = get_db()
-    #     db = next(db_generator) # Obtiene la sesión
-    # except Exception:
-    #     # En caso de que falle la inicialización de DB (poco probable aquí)
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail="Error al conectar con la base de datos."
-    #     )
- 
-         
-    # try:
-    #     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    #     email: str = payload.get("sub")
-    #     if email is None:
-    #         raise credentials_exception
-
-    #     token_data = TokenData(email=email, user_type=payload.get("tipo"))
-
-    # except JWTError:
-    #     raise credentials_exception
-    
-
-    # # db_generator = get_db()
-    # # db = next(db_generator)
-
-    # user = get_user_by_email(db=db, email=token_data.email)
-    # if user is None:
-    #     raise credentials_exception
-
-    # db.close()
-    # return user
-
-
-
-
-
-
-    # # Asegúrate de que db existe antes de usarlo
-    # if db is None:
-    #     raise credentials_exception
-
-    # # Busca al usuario en la base de datos
-    # user = get_user_by_email(db=db, email=token_data.email) # <-- PASAR db A get_user_by_email
-
-    # if user is None:
-    #     raise credentials_exception
-
-    # # Cierra la sesión temporalmente
-    # if db:
-    #     db.close()
-
-    # # Devuelve el objeto de dominio del usuario (modelo ORM)
-    # return user
-
-    

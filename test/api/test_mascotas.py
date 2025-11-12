@@ -1,5 +1,6 @@
 import pytest
 
+
 # --- Helper para loguear y obtener token ---
 def login_and_get_token(client, email, contrasena):
     resp = client.post("/v1/users/login", json={"email": email, "contrasena": contrasena})
@@ -33,6 +34,7 @@ def test_create_pet_success(seeded_client):
     assert data["raza"] == "Labrador"
     assert data["edad"] == 3
     assert "id" in data
+
 
 # --- TEST: Crear mascota siendo cuidador (prohibido) ---
 def test_create_pet_forbidden_for_cuidador(seeded_client):

@@ -1,12 +1,11 @@
-from petcare.core.resena_services import get_cuidador_puntaje, get_reviews_by_cuidador
 from sqlalchemy.orm import Session
-
 from datetime import date
-from petcare.domain.models.cuidador_model import Cuidador
-from petcare.domain.models.reserva_model import Reserva
+
+from petcare.core.resena_services import get_cuidador_puntaje, get_reviews_by_cuidador
+from petcare.infraestructura.models.usuario_model import Cuidador
+from petcare.infraestructura.models.reserva_model import Reserva
 from petcare.core.map_services import distancia_geodesica
 from sqlalchemy import or_
-from sqlalchemy.dialects.postgresql import JSONB
 
 
 def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha_fin: date) -> bool:
@@ -24,51 +23,39 @@ def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha
     return len(reservas) == 0
 
 
-def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fecha_inicio: date, fecha_fin: date, radio_km: float = None):
+def buscar_cuidadores_disponibles(
+    db: Session, 
+    cliente, 
+    especies: list[str], 
+    fecha_inicio: date, 
+    fecha_fin: date, 
+    radio_km: float = None
+):
+    """
+    Busca cuidadores disponibles que coincidan con la especie, la ubicación 
+    y la disponibilidad horaria del servicio solicitado.
+    """
     if not cliente.lat or not cliente.lon:
         raise ValueError("El cliente no tiene coordenadas registradas.")
 
-    # Obtenemos el nombre del dialecto de la sesión de la BD
-    dialecto = db.bind.dialect.name
-
-    # onstruimos la lista de filtros de especies
-    filtros_especie = []
-    
-    # Asegurarnos de que 'especies' sea siempre una lista
-    if not isinstance(especies, list):
-        especies = [especies]
-
-    # Creamos el filtro correcto basado en el dialecto
-    if dialecto == "postgresql":
-        # Usa el operador '?' de JSONB, que funciona en Supabase
-        for e in especies:
-            filtros_especie.append(Cuidador.servicios.cast(JSONB).op('?')(e))
+    if isinstance(especies, list):
+        # Crear la cláusula OR para buscar cualquiera de las especies en la columna servicios
+        especie_filter = or_(*[Cuidador.servicios.contains(e) for e in especies])
     else:
-        # Usa .contains() (LIKE), que funciona en SQLite
-        for e in especies:
-            filtros_especie.append(Cuidador.servicios.contains(e))
-    
-    # Combinamos todos los filtros con un "OR"
-    # (Ej. WHERE servicios ? 'Perro' OR servicios ? 'Gato')
-    especie_filter = or_(*filtros_especie)
+        especie_filter = Cuidador.servicios.contains(especies)
 
-    cuidadores = (
-        db.query(Cuidador)
-        .join(Cuidador.usuario)
-        .filter(especie_filter)
-        .all()
-    )
+    cuidadores = db.query(Cuidador).filter(especie_filter).all()
 
     resultado = []
+
     for cuidador in cuidadores:
-        usuario = cuidador.usuario
-        promedio = get_cuidador_puntaje(db, usuario.id)
-        resena = get_reviews_by_cuidador(db, usuario.id)
-        if usuario.lat is None or usuario.lon is None:
+        promedio = get_cuidador_puntaje(db, cuidador.id)
+        resena = get_reviews_by_cuidador(db, cuidador.id)
+        if cuidador.lat is None or cuidador.lon is None:
             continue
 
         # Calcular distancia
-        distancia = distancia_geodesica((cliente.lat, cliente.lon), (usuario.lat, usuario.lon))
+        distancia = distancia_geodesica((cliente.lat, cliente.lon), (cuidador.lat, cuidador.lon))
         if radio_km is not None and distancia > radio_km:
             continue
 
@@ -76,7 +63,7 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fec
         reservas_ocupadas = (
             db.query(Reserva)
             .filter(
-                Reserva.cuidador_id == usuario.id,
+                Reserva.cuidador_id == cuidador.id,
                 Reserva.estado != "cancelada",
                 Reserva.fecha_inicio <= fecha_fin,
                 Reserva.fecha_fin >= fecha_inicio
@@ -92,10 +79,10 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fec
             continue
 
         resultado.append({
-            "id": usuario.id,
-            "nombre": usuario.nombre,
-            "email": usuario.email,
-            "direccion": usuario.direccion,
+            "id": cuidador.id,
+            "nombre": cuidador.nombre,
+            "email": cuidador.email,
+            "direccion": cuidador.direccion,
             "descripcion": cuidador.descripcion,
             "tarifas": cuidador.tarifas,
             "distancia_km": round(distancia, 2),
@@ -103,4 +90,9 @@ def buscar_cuidadores_disponibles(db: Session, cliente, especies: list[str], fec
             "reseñas": resena
         })
 
+    #Oredenar por distancia
     return sorted(resultado, key=lambda x: x["distancia_km"])
+
+
+
+

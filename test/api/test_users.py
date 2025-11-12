@@ -12,9 +12,7 @@ def test_register_user_success(client):
         "direccion": "Av. Corrientes 1200, Buenos Aires"
     }
 
-
     response = client.post("/v1/users/register", json=payload)
-    print(response.json())
     assert response.status_code == 201
     data = response.json()
 
@@ -33,9 +31,7 @@ def test_register_user_conflict_email(seeded_client):
         "direccion": "Av. Corrientes 1234, Buenos Aires"
     }
 
-
     response = seeded_client.post("/v1/users/register", json=payload)
-
 
     assert response.status_code in (400, 409)
     data = response.json()
@@ -67,7 +63,6 @@ def test_login_wrong_password(client):
         "direccion": "Av. Rivadavia 2000, Buenos Aires"
     }
     client.post("/v1/users/register", json=register_payload)
-
 
     # Intentar login con contraseña incorrecta
     login_payload = {

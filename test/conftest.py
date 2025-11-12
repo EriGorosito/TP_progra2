@@ -1,11 +1,13 @@
+from datetime import date
 import pytest
 from fastapi.testclient import TestClient
-from petcare.api.main import app
-from petcare.core.database import Base, get_db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from datetime import date
+
+#Importaciones locales
+from petcare.api.main import app
+from petcare.core.database import Base, get_db
 
 
 # --- Base de datos temporal en memoria ---
@@ -32,7 +34,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(scope="function")
 def client():
-    # Re-crear las tablas para cada test, asegurando independencia
+    """Crea un cliente de prueba FastAPI y asegura que la BD esté limpia."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     with TestClient(app) as c:
@@ -42,6 +44,7 @@ def client():
 @pytest.fixture(scope="function")
 def seeded_client(client):
     """Cliente con datos iniciales cargados (por ejemplo, un usuario Erika)."""
+    # 1. Registro de Laura (Cuidadora)
     payload = {
         "nombre": "Laura",
         "email": "laura@mail.com",
@@ -52,6 +55,7 @@ def seeded_client(client):
     cuidador = client.post("/v1/users/register", json=payload)
     assert cuidador.status_code in (200, 201), f"Error al registrar Erika: {cuidador.status_code} {cuidador.text}"
 
+    # 2. Registro de Claudio (Cliente)
     claudio_payload = {
         "nombre": "Claudio",
         "email": "claudio@mail.com",
@@ -59,7 +63,6 @@ def seeded_client(client):
         "tipo": "cliente",
         "direccion": "Av. Rivadavia 2000, Buenos Aires, Argentina"
     }
-
     resp2 = client.post("/v1/users/register", json=claudio_payload)
     assert resp2.status_code in (200, 201), f"Error al registrar Claudio: {resp2.status_code} {resp2.text}"
 

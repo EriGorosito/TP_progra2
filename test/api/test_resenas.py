@@ -1,6 +1,6 @@
-# petcare/test/test_resenas.py
 import pytest
 from datetime import date, timedelta
+
 
 # --- TEST: crear reseña ---
 def test_crear_review_desde_reserva_finalizada(seeded_client, crear_cuidador):
@@ -15,7 +15,6 @@ def test_crear_review_desde_reserva_finalizada(seeded_client, crear_cuidador):
     assert login_response.status_code == 200, login_response.text
     token_cliente = login_response.json()["access_token"]
     headers_cliente = {"Authorization": f"Bearer {token_cliente}"}
-
 
     # --- Crear una mascota ---
     mascota_payload = {

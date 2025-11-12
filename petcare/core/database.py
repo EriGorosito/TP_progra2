@@ -1,11 +1,9 @@
-# petcare/core/database.py
-
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Carga las variables del archivo .env (si existe)
+# Carga las variables del archivo .env 
 load_dotenv()
 
 
@@ -25,7 +23,8 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
-    connect_args=connect_args  # <-- Pasa los argumentos condicionales
+    connect_args=connect_args,  # <-- Pasa los argumentos condicionales
+    pool_pre_ping=True
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -8,8 +8,6 @@ from petcare.domain.observer import EventManager, NotificationObserver
 
 
 # --- Lógica de Prueba ---
-
-
 def test_reserva_confirmada_genera_notificacion():
     """
     Verifica que confirmar una reserva dispare el evento y genere la notificación.

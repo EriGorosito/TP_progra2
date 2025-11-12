@@ -1,6 +1,7 @@
 # petcare/domain/mascota.py
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
+
 from petcare.core.database import Base
 from petcare.domain.especie import Especie
 
