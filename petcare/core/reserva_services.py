@@ -57,13 +57,21 @@ def create_reserva(
 
         # 5. Notificar (con el arreglo de IDs que arregla el error ObjectDeletedError)
         if event_manager:
+            # --- ¡ESTE ES EL PAYLOAD COMPLETO! ---
+            # Extraemos los datos simples ANTES de que los objetos mueran.
             data_payload = {
+                # Datos para la notificación "reserva_creada"
                 "cliente_id": cliente.id,
+                "cliente_nombre": cliente.nombre, # <-- ¡La pieza que faltaba!
                 "cuidador_id": cuidador.id,
+                
+                # Datos para otros eventos (si los necesitaras)
+                "cuidador_nombre": cuidador.nombre, 
                 "reserva_id": nueva_reserva.id,
                 "fecha_inicio_str": nueva_reserva.fecha_inicio.isoformat(),
                 "estado": nueva_reserva.estado
             }
+            # Pasamos el diccionario de datos simples
             event_manager.notify("reserva_creada", data_payload)
 
         return nueva_reserva
