@@ -20,7 +20,6 @@ def run():
             tipo="cliente"
         )
 
-
         u_cuidador = UsuarioModel(
             nombre="María",
             email="maria@example.com",
@@ -28,18 +27,14 @@ def run():
             tipo="cuidador"
         )
 
-
         db.add_all([u_cliente, u_cuidador])
         db.commit()
-
 
         # refrescar para obtener los ids que creó la BD
         db.refresh(u_cliente)
         db.refresh(u_cuidador)
 
-
         print("✅ Usuarios insertados. IDs:", u_cliente.id, u_cuidador.id)
-
 
         # Opcional: crear una mascota (si tenés MascotaDB definido)
         try:
@@ -59,8 +54,7 @@ def run():
             print("⚠️ No se pudo crear mascota (tal vez no existe MascotaModel):", e)
             db.rollback()
 
-
-        # Opcional: crear reserva (usa FK a usuarios y mascota)
+        # crear reserva (usa FK a usuarios y mascota)
         try:
             reserva = ReservaModel(
                 cliente_id=u_cliente.id,
@@ -78,7 +72,6 @@ def run():
             print("⚠️ No se pudo crear reserva:", e)
             db.rollback()
 
-
         try:
             resena = ResenaModel(
             cliente_id=u_cliente.id,
@@ -93,8 +86,6 @@ def run():
         except Exception as e:
             print("⚠️ No se pudo crear resena:", e)
             db.rollback()
-
-
 
 
         # Consultas de verificación
