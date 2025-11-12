@@ -32,7 +32,7 @@ class NotificationObserver:
         if event_name == "reserva_creada":
             noti = Notificacion(
                 id=len(self.notificaciones) + 1,
-                usuario_id=data["cuidador"].id,
+                usuario_id=data["cuidador_id"],
                 mensaje=f"Nueva reserva solicitada por {data['cliente'].nombre}.",
                 tipo="reserva"
             )
