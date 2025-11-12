@@ -41,29 +41,40 @@ def create_reserva(
         fecha_fin=fecha_fin,
         estado="pendiente"
     )
-
+    # "añades" los objetos Mascota a la lista.
+    #  SQLAlchemy sabe que debe crear las filas en la tabla 'reserva_mascota'.
+    nueva_reserva.mascotas.extend(mascotas)
+    
+    # 3. Añades SOLO la reserva a la sesión.
     db.add(nueva_reserva)
-    db.commit()
-    db.refresh(nueva_reserva)
 
-    # Asignar mascotas
-    for mascota in mascotas:
-        db.execute(
-            reserva_mascota.insert().values(
-                reserva_id=nueva_reserva.id,
-                mascota_id=mascota.id
-            )
+    try:
+        # 4. UN SOLO COMMIT
+        #    Esto guarda la reserva Y las asociaciones en la tabla puente.
+        #    Si falla, NADA se guarda. Es 100% atómico.
+        db.commit()
+        db.refresh(nueva_reserva) # Para obtener el ID
+
+        # 5. Notificar (con el arreglo de IDs que arregla el error ObjectDeletedError)
+        if event_manager:
+            data_payload = {
+                "cliente_id": cliente.id,
+                "cuidador_id": cuidador.id,
+                "reserva_id": nueva_reserva.id,
+                "fecha_inicio_str": nueva_reserva.fecha_inicio.isoformat(),
+                "estado": nueva_reserva.estado
+            }
+            event_manager.notify("reserva_creada", data_payload)
+
+        return nueva_reserva
+
+    except Exception as e:
+        # Si algo falla (la reserva O las mascotas), revertimos TODO.
+        db.rollback()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al crear la reserva: {e}"
         )
-    db.commit()
-
-    if event_manager:
-        event_manager.notify("reserva_creada", {
-            "cliente": cliente,
-            "cuidador": cuidador,
-            "reserva": nueva_reserva
-        })
-
-    return nueva_reserva
 
 
 def actualizar_estado_reserva(

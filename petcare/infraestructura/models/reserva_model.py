@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 #Importaciones locales
 from petcare.core.database import Base
+from .mascota_model import Mascota
 
 # Tabla intermedia para la relación muchos-a-muchos
 reserva_mascota = Table(
@@ -25,5 +26,5 @@ class Reserva(Base):
 
     cliente = relationship("Usuario", foreign_keys=[cliente_id])
     cuidador = relationship("Usuario", foreign_keys=[cuidador_id])
-    mascotas = relationship("Mascota", secondary=reserva_mascota)
+    mascotas = relationship("Mascota", secondary=reserva_mascota, back_populates="reservas")
     resena = relationship("Resena", back_populates="reserva", uselist=False)
