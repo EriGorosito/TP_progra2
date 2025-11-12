@@ -91,6 +91,13 @@ def actualizar_estado_reserva(
             detail=f"No se puede modificar una reserva {reserva.estado}."
         )
 
+    estados_validos = {"aceptada", "rechazada", "Aceptada", "Rechazada"}
+    if nuevo_estado not in estados_validos:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Estado '{nuevo_estado}' no permitido. Solo se puede aceptar o rechazar."
+        )
+
     reserva.estado = nuevo_estado
     db.commit()
     db.refresh(reserva)

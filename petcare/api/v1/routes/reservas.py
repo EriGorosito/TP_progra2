@@ -135,7 +135,7 @@ def actualizar_estado(
     current_user: Usuario = Depends(get_current_user)
 ):
     """
-    Actualiza el estado de una reserva (ej: 'cancelada', 'finalizada').
+    Actualiza el estado de una reserva (ej: 'cancelada', 'aceptada').
     """
     return actualizar_estado_reserva(
         db=db,
