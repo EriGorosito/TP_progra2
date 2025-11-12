@@ -6,6 +6,7 @@ from petcare.domain.models.usuario_model import Usuario as UsuarioModel
 from petcare.domain.models.mascota_model import Mascota as MascotaModel
 from petcare.domain.models.reserva_model import Reserva as ReservaModel
 from petcare.domain.models.resena_model import Resena as ResenaModel
+from petcare.domain.models.cuidador_model import Cuidador as CuidadorModel
 
 def run():
     db = SessionLocal()
