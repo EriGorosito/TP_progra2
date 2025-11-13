@@ -2,6 +2,7 @@
 
 from sqlalchemy import Column, Integer, ForeignKey, Table
 from petcare.core.database import Base # O como importes tu Base
+## 
 
 # Esta tabla ahora vive aquí, en un lugar neutral
 reserva_mascota = Table(
