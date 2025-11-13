@@ -13,7 +13,6 @@ from petcare.infraestructura.models.usuario_model import Usuario
 from petcare.infraestructura.models.reserva_model import Reserva
 from petcare.infraestructura.models.mascota_model import Mascota
 from petcare.core.reserva_services import actualizar_estado_reserva
-from petcare.core.reserva_services import finalizar_reserva
 
 
 reserva_router = APIRouter(prefix="/reservas", tags=["Reservas"])

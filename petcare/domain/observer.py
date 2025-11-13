@@ -71,13 +71,6 @@ class NotificationObserver:
                 mensaje=f"¡Felicidades! Tu mascota '{data['pet_nombre']}' ({data['pet_especie']}) ha sido registrada.",
                 tipo="registro"
             )
-        elif event_name == "reserva_finalizada":
-            noti = Notificacion(
-                id=len(self.notificaciones) + 1,
-                usuario_id=data["cliente_id"], # Notificamos al CLIENTE
-                mensaje=f"El servicio con {data['cuidador_nombre']} ha finalizado. ¡No olvides dejar tu reseña!",
-                tipo="recordatorio_resena" # Un nuevo tipo útil para el frontend
-            )
         else:
             return
 
@@ -151,4 +144,3 @@ event_manager.subscribe("mascota_registrada", noti_observer)
 event_manager.subscribe("reserva_creada", noti_observer)
 event_manager.subscribe("reserva_confirmada", noti_observer)
 event_manager.subscribe("reserva_rechazada", noti_observer)
-event_manager.subscribe("reserva_finalizada", noti_observer)
