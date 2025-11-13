@@ -23,3 +23,6 @@ class ReservaOut(BaseModel):
     fecha_inicio: date
     fecha_fin: date
     estado: str
+
+    class Config:
+        from_attributes = True

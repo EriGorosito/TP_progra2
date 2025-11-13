@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import List
 
 from sqlalchemy.orm import Session
@@ -123,3 +123,77 @@ def actualizar_estado_reserva(
 
     return reserva
 
+def finalizar_reserva(
+    db: Session,
+    reserva_id: int,
+    current_user: Usuario
+) -> Reserva:
+    """
+    Cambia el estado de una reserva a 'finalizada'.
+    Reglas:
+      1. Solo si estaba 'aceptada'.
+      2. Solo si es el último día de la reserva o el día siguiente.
+    """
+    # 1. Obtener la reserva
+    reserva = db.query(Reserva).filter(Reserva.id == reserva_id).first()
+
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva no encontrada.")
+
+    # 2. Validar autorización (Asumo que lo hace el Cuidador, igual que actualizar_estado)
+    if reserva.cuidador_id != current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="No tienes permiso para finalizar esta reserva."
+        )
+
+    # 3. Validar estado previo
+    # Aceptamos "aceptada" o "Aceptada" por si acaso
+    if reserva.estado.lower() != "aceptada":
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede finalizar una reserva en estado '{reserva.estado}'. Debe estar 'aceptada'."
+        )
+
+    # 4. Validar Fechas (La lógica crítica)
+    hoy = date.today()
+    fecha_fin = reserva.fecha_fin
+    dia_siguiente = fecha_fin + timedelta(days=1)
+
+    # Si hoy es antes de que termine la reserva
+    if hoy < fecha_fin:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Aún no puedes finalizar la reserva. Termina el {fecha_fin}."
+        )
+
+    # 5. Aplicar cambio y guardar
+    reserva.estado = "finalizada"
+    
+    try:
+        db.commit()
+        db.refresh(reserva)
+
+        # 6. Notificar al Observer
+        # Preparamos los datos planos antes de que SQLAlchemy cierre la sesión
+        if event_manager:
+            # NOTA: Aquí accedemos a las relaciones (cliente, cuidador)
+            # Asegúrate de que estén cargadas o accesibles (lazy loading suele funcionar aquí antes del return)
+            data_payload = {
+                "reserva_id": reserva.id,
+                "cliente_id": reserva.cliente_id,
+                "cliente_nombre": reserva.cliente.nombre,
+                "cuidador_id": reserva.cuidador_id,
+                "cuidador_nombre": reserva.cuidador.nombre,
+                "fecha_fin": reserva.fecha_fin.isoformat()
+            }
+            event_manager.notify("reserva_finalizada", data_payload)
+
+        return reserva
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al finalizar la reserva: {str(e)}"
+        )

@@ -13,6 +13,7 @@ from petcare.infraestructura.models.usuario_model import Usuario
 from petcare.infraestructura.models.reserva_model import Reserva
 from petcare.infraestructura.models.mascota_model import Mascota
 from petcare.core.reserva_services import actualizar_estado_reserva
+from petcare.core.reserva_services import finalizar_reserva
 
 
 reserva_router = APIRouter(prefix="/reservas", tags=["Reservas"])
@@ -143,3 +144,28 @@ def actualizar_estado(
         nuevo_estado=estado_reserva,
         current_user=current_user
     )
+
+
+@reserva_router.put(
+    "/reservas/{reserva_id}/finalizar", 
+    response_model=ReservaOut, 
+    status_code=status.HTTP_200_OK,
+    summary="Finalizar una reserva manualmente"
+)
+def finalizar_reserva_endpoint(
+    reserva_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Permite al cuidador marcar una reserva como finalizada.
+    Solo permitido:
+    - Si el usuario es el cuidador de la reserva.
+    - Si la reserva estaba 'aceptada'.
+    """
+    reserva_actualizada = finalizar_reserva(
+        db=db,
+        reserva_id=reserva_id,
+        current_user=current_user
+    )
+    return reserva_actualizada
