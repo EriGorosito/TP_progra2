@@ -74,7 +74,6 @@ def create_reserva(
             # Pasamos el diccionario de datos simples
             event_manager.notify("reserva_creada", data_payload)
 
-            print("RESERVA CREADA, NOTIFICACIÓN COMENTADA (PRUEBA DE HUMO)") # Añade esto
         return nueva_reserva
 
     except Exception as e:
