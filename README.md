@@ -23,7 +23,6 @@ El proyecto sigue una arquitectura modular y utiliza **pytest** para realizar pr
 #### 👤 Gestión de usuarios 
 - El sistema debe permitir registrar un nuevo usuario como cliente o cuidador
 - El sistema debe validar que el email sea único y tenga formato correcto
-- El sistema debe enviar un correo de confirmación al completar el registro
 - El sistema debe permitir al usuario iniciar sesión con email y contraseña
 
 #### 🐶 Gestión de mascotas(Cliente) 
@@ -37,14 +36,14 @@ El proyecto sigue una arquitectura modular y utiliza **pytest** para realizar pr
 - El sistema debe mostrar los perfiles de cuidadores solo si están activos y completos.
 
 #### 🔎 Búsqueda y Filtrado
-- El cliente debe poder buscar cuidadores filtrando por: tipo de servicio, fecha, ubicación y tipo de mascota.
-- El cliente debe poder ver el perfil completo de un cuidador (reseñas, fotos, tarifas, disponibilidad).
+- El cliente debe poder buscar cuidadores filtrando por:  fecha, ubicación y tipo de mascota.
+- El cliente debe poder ver el perfil completo de un cuidador (puntaje, reseñas, tarifas).
 
 #### 📅 Reservas
-- El cliente debe poder crear una reserva seleccionando cuidador, mascota, fechas y servicios.
+- El cliente debe poder crear una reserva seleccionando cuidador, mascota y fechas.
 - El sistema debe notificar al cuidador cuando reciba una solicitud.
 - El cuidador debe poder aceptar o rechazar reservas.
-- El sistema debe actualizar el estado de la reserva (pendiente, confirmada, rechazada, completada).
+- El sistema debe actualizar el estado de la reserva (pendiente, confirmada, rechazada, finalizada).
 
 #### 🌟 Reseñas
 - Tras finalizar el servicio, el cliente debe poder dejar una reseña y puntaje al cuidador.
@@ -122,13 +121,12 @@ app/
 ├── core/
 ├── db/
 ├── domain/
-│   ├── models/
-│   └── ...
+│   infraestructura/
+│    ├──models/
+│    └── factories/
 ├── schemas/
-├── services/
 ├── tasks/
-├── test/
-├── main.py
+├── __init__.py
 ```
 
 📁 api/
@@ -139,18 +137,15 @@ Aquí se definen los endpoints que reciben peticiones HTTP y llaman a los servic
 📁 core/
 
 Configuración esencial del sistema:
-variables de entorno, autenticación, seguridad, inicialización global.
+variables de entorno, autenticación, seguridad, inicialización global. Conecta la API con el dominio.
+Se encargan de coordinar acciones entre modelos, reglas de negocio y base de datos.
 
-📁 db/
-
-Manejo de la base de datos:
-creación de la sesión, inicialización de conexión, migraciones y funciones auxiliares.
 
 📁 domain/
 
-Contiene la lógica de negocio de la aplicación (independiente del framework).
+Contiene la lógica de negocio de la aplicación (independiente del framework). 
 
-📁 domain/models/
+📁 infrestructura/models/
 
 Modelos ORM que representan entidades en la base de datos.
 
@@ -158,10 +153,6 @@ Modelos ORM que representan entidades en la base de datos.
 
 Modelos Pydantic usados para validar y estructurar datos de entrada y salida en la API.
 
-📁 services/
-
-Capa de servicios que implementa la lógica que conecta la API con el dominio.
-Se encargan de coordinar acciones entre modelos, reglas de negocio y base de datos.
 
 📁 tasks/
 
