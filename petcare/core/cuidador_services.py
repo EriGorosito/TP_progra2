@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from sqlalchemy.dialects.postgresql import JSONB
 
 from petcare.core.resena_services import get_cuidador_puntaje, get_reviews_by_cuidador
-from petcare.infraestructura.models.usuario_model import Cuidador
+from petcare.infraestructura.models.usuario_model import Usuario, Cuidador
 from petcare.infraestructura.models.reserva_model import Reserva
 from petcare.core.map_services import distancia_geodesica
 from sqlalchemy import or_
@@ -99,7 +99,19 @@ def buscar_cuidadores_disponibles(
     especie_filter = or_(*filtros_especie)
 
     # --- B. Consulta Inicial ---
-    cuidadores = db.query(Cuidador).filter(especie_filter).all()
+    # 1. Empezamos consultando la tabla Cuidador
+    query = db.query(Cuidador)
+    
+    # 2. La unimos (JOIN) con la tabla Usuario usando la FK correcta
+    query = query.join(Usuario, Cuidador.usuario_id == Usuario.id)
+    
+    # 3. Filtramos para asegurar que solo traemos usuarios de tipo 'cuidador'
+    query = query.filter(Usuario.tipo == 'cuidador')
+    
+    # 4. Ahora sí, aplicamos el filtro de especies (que ya funciona)
+    query = query.filter(especie_filter)
+
+    cuidadores = query.all()
 
     resultado = []
 
