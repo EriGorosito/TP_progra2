@@ -9,7 +9,10 @@ from petcare.schemas.user_schema import UserCreate
 
 
 def get_user_by_email(db: Session, email: str) -> UsuarioModel | None:
-    """Busca un usuario en la DB real por email."""
+    """
+    Busca un usuario en la DB real por email.
+    """
+
     return db.query(UsuarioModel).filter(UsuarioModel.email == email).first()
 
 
@@ -18,6 +21,7 @@ def create_user_account(db: Session, user_data):
     Crea una nueva cuenta de usuario (Cliente o Cuidador)
     verificando unicidad del email y geocodificando la dirección.
     """
+
     # Verificar que el email no exista
     if get_user_by_email(db, user_data.email):
         raise HTTPException(
