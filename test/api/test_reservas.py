@@ -31,7 +31,7 @@ def test_crear_reserva_exitosa(seeded_client, crear_cuidador):
     reserva_payload = {
         "cuidador_id": cuidador_id,
         "mascotas_ids": [pet_id],
-        "fecha_inicio": str(date.today()),
+        "fecha_inicio": str(date.today()+ timedelta(days=3)),
         "fecha_fin": str(date.today() + timedelta(days=2))
     }
 
@@ -140,7 +140,7 @@ def test_actualizar_estado_reserva_exitoso(seeded_client, crear_cuidador):
     reserva_payload = {
         "cuidador_id": crear_cuidador["id"],
         "mascotas_ids": [pet_id],
-        "fecha_inicio": str(date.today()),
+        "fecha_inicio": str(date.today()+ timedelta(days=5)),
         "fecha_fin": str(date.today() + timedelta(days=2))
     }
 
