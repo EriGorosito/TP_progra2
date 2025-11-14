@@ -99,21 +99,25 @@ def buscar_cuidadores_disponibles(
     especie_filter = or_(*filtros_especie)
 
     # --- B. Consulta Inicial ---
-    # 1. Empezamos consultando la tabla Cuidador
+    #1. Empezamos consultando Cuidador.
+    #    SQLAlchemy hará el JOIN implícito a 'usuarios'
+    #    gracias a la herencia (Cuidador(Usuario)).
     query = db.query(Cuidador)
     
-    # 2. La unimos (JOIN) con la tabla Usuario usando la FK correcta
-    query = query.join(Usuario, Cuidador.id == Usuario.id)
+    # 2. Filtramos por tipo.
+    #    (Esto previene el error 'InvalidRequestError'
+    #    de tus datos contaminados del Cliente ID 1).
+    query = query.filter(Cuidador.tipo == 'cuidador')
     
-    # 3. Filtramos para asegurar que solo traemos usuarios de tipo 'cuidador'
-    query = query.filter(Usuario.tipo == 'cuidador')
-    
-    # 4. Ahora sí, aplicamos el filtro de especies (que ya funciona)
+    # 3. Aplicamos el filtro de especies.
+    #    (Esto previene el error 'jsonb ~~ text' de PostgreSQL).
     query = query.filter(especie_filter)
 
+    # 4. Ejecutamos la consulta.
     cuidadores = query.all()
-
+    
     resultado = []
+
 
     # Generar rango de fechas una sola vez para el bucle
     delta_dias = (fecha_fin - fecha_inicio).days + 1
