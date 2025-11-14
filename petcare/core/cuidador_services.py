@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.dialects.postgresql import JSONB
 from fastapi import HTTPException
 
@@ -137,22 +137,39 @@ def buscar_cuidadores_disponibles(
     else:
         especies_list = especies
 
+    # Convertimos todas las especies buscadas a minúscula.
+    especies_list_lower = [e.lower() for e in especies_list]
+    
     # Construimos el filtro según la base de datos
     if "postgresql" in dialecto:
         # Render/Supabase: Usamos operador JSONB '?'
-        for e in especies_list:
+        for e in especies_list_lower: # <-- Usamos la lista en minúscula
             filtros_especie.append(Cuidador.servicios.cast(JSONB).op('?')(e))
     else:
         # Local SQLite: Usamos LIKE (contains)
-        for e in especies_list:
+        for e in especies_list_lower: # <-- Usamos la lista en minúscula
             filtros_especie.append(Cuidador.servicios.contains(e))
 
     especie_filter = or_(*filtros_especie)
 
     # --- B. Consulta Inicial ---
-    cuidadores = db.query(Cuidador).filter(especie_filter).all()
+    # 1. Consultamos Cuidador.
 
+    query = db.query(Cuidador)
+    
+    # 2. Filtramos por tipo.
+
+    query = query.filter(func.lower(Cuidador.tipo) == 'cuidador')
+    
+    # 3. Aplicamos el filtro de especies.
+    # Esto previene el error 'jsonb ~~ text' de PostgreSQL
+    query = query.filter(especie_filter)
+
+    # 4. Ejecutamos la consulta.
+    cuidadores = query.all()
+    
     resultado = []
+
 
     # Generar rango de fechas una sola vez para el bucle
     delta_dias = (fecha_fin - fecha_inicio).days + 1
@@ -185,11 +202,14 @@ def buscar_cuidadores_disponibles(
             continue
 
         # 2. Verificar días no disponibles (Manuales)
-        # (Arreglado: comparamos fechas reales, no números del range)
-        dias_no_disp = cuidador.dias_no_disponibles or []
-        
-        # Si alguna fecha solicitada está en la lista de no disponibles, saltamos este cuidador
-        if any(dia in dias_no_disp for dia in fechas_solicitadas_str):
+        dias_no_disp = cuidador.dias_no_disponibles or [] # lista de strings: ["2029-12-05"]
+    
+        # Generamos la lista de fechas que el cliente necesita
+        delta = (fecha_fin - fecha_inicio).days + 1
+        fechas_solicitadas_str = [(fecha_inicio + timedelta(days=i)).isoformat() for i in range(delta)]
+    
+    # Si ALGUNA fecha solicitada está en la lista de no disponibles, saltamos este cuidador
+        if any(dia_str in dias_no_disp for dia_str in fechas_solicitadas_str):
             continue
 
         # --- D. Obtener datos extra y armar respuesta ---
