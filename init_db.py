@@ -1,6 +1,6 @@
 # petcare/init_db.py
 from petcare.core.database import Base, engine
-from petcare.domain.models import usuario_model, mascota_model, reserva_model, resena_model  # importa los modelos ORM
+from petcare.infraestructura.models import usuario_model, mascota_model, reserva_model, resena_model  # importa los modelos ORM
 
 from sqlalchemy import inspect
 
