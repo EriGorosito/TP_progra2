@@ -18,8 +18,8 @@ class Reserva:
     def crear(self, event_manager=None):
         if event_manager:
             event_manager.notify("reserva_creada", {
-                "cliente": self.cliente,
-                "cuidador": self.cuidador,
+                "cliente_id": self.cliente.nombre,
+                "cuidador_nombre": self.cuidador.id,
                 "reserva": self
             })
 
@@ -28,8 +28,8 @@ class Reserva:
         self.estado = "confirmada"
         if event_manager:
             event_manager.notify("reserva_confirmada", {
-                "cliente": self.cliente,
-                "cuidador": self.cuidador,
+                "cliente_id": self.cliente.id,
+                "cuidador_nombre": self.cuidador.nombre,
                 "reserva": self
             })
 
@@ -38,8 +38,8 @@ class Reserva:
         self.estado = "rechazada"
         if event_manager:
             event_manager.notify("reserva_rechazada", {
-                "cliente": self.cliente,
-                "cuidador": self.cuidador,
+                "cliente_id": self.cliente.id,
+                "cuidador_nombre": self.cuidador.nombre,
                 "reserva": self
             })
 

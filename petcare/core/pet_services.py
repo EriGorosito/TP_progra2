@@ -35,9 +35,12 @@ def create_pet(db: Session, pet_data: PetCreate, current_user: UsuarioModel) -> 
     db.refresh(db_pet) # Para obtener el ID generado automáticamente por la DB
 
     event_manager.notify("mascota_registrada", {
-        "owner": current_user,
-        "pet": db_pet
+        "owner_id": current_user.id,
+        "pet_nombre": db_pet.nombre,
+        "pet_especie": db_pet.especie
     })
+
+   
 
     return db_pet
 
