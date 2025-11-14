@@ -5,7 +5,7 @@ from datetime import date
 # Importaciones locales
 from petcare.core.database import get_db
 from petcare.core.security import get_current_user
-from petcare.core.cuidador_services import buscar_cuidadores_disponibles
+from petcare.core.cuidador_services import buscar_cuidadores_disponibles, completar_datos_cuidador_service
 from petcare.infraestructura.models.usuario_model import Usuario
 from petcare.infraestructura.models.usuario_model import Cuidador
 from petcare.schemas.cuidador_schema import CuidadorCreate
@@ -16,7 +16,6 @@ cuidadores_router = APIRouter(
     tags=["Cuidadores"]
 )
 
-
 @cuidadores_router.post("/completar/{usuario_id}")
 def completar_datos_cuidador(
     usuario_id: int,
@@ -25,42 +24,9 @@ def completar_datos_cuidador(
     db: Session = Depends(get_db)
 ):
     """
-    Completa los datos y la descripción del cuidador autenticado.
+     Completa los datos y la descripción del cuidador autenticado.
     """
-    # 1. Validar Usuario
-    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
-
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    if usuario.tipo != "cuidador":
-        raise HTTPException(status_code=400, detail="El usuario no es cuidador")
-
-    # 2. Obtener Cuidador 
-    cuidador = db.query(Cuidador).filter(Cuidador.id == usuario_id).first()
-    if not cuidador:
-        raise HTTPException(status_code=404, detail="Cuidador no encontrado")
-
-    # 3. Serializar datos para almacenamiento
-    servicios_serializables = [
-        s.value if hasattr(s, 'value') else str(s)
-        for s in datos.servicios
-    ]
-
-    dias_serializables = (
-        [str(d) for d in datos.dias_no_disponibles]
-        if datos.dias_no_disponibles else None
-    )
-
-    # 4. Actualizar atributos
-    cuidador.descripcion = datos.descripcion
-    cuidador.servicios = servicios_serializables
-    cuidador.tarifas = datos.tarifas
-    cuidador.dias_no_disponibles = dias_serializables
-
-    # 5. Persistir cambios
-    db.commit()
-    db.refresh(cuidador)
-
+    completar_datos_cuidador_service(db, usuario_id, current_user, datos)
     return {"mensaje": "Datos del cuidador completados correctamente"}
 
 

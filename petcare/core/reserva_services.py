@@ -95,6 +95,9 @@ def create_reserva(
     fecha_fin: date,
     event_manager=None
 ) -> Reserva:
+    """
+    Se crea una reserva a partir seleccionando los datos de la mascota la fecha y el cuidador deseado
+    """
     
     # 1. Validación
     if not cuidador_disponible(db, cuidador.id, fecha_inicio, fecha_fin):
@@ -155,7 +158,10 @@ def actualizar_estado_reserva(
     nuevo_estado: str,
     current_user: Usuario
 ) -> Reserva:
-    """Lógica de negocio para cambiar el estado de una reserva."""
+    
+    """
+    Lógica de negocio para cambiar el estado de una reserva.
+    """
     reserva = db.query(Reserva).filter(Reserva.id == reserva_id).first()
 
     if not reserva:

@@ -1,29 +1,80 @@
-from sqlalchemy.orm import Session
 from datetime import date, timedelta
-# Importación necesaria para que PostgreSQL entienda columnas JSONB
+
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from sqlalchemy.dialects.postgresql import JSONB
+from fastapi import HTTPException
 
 from petcare.core.resena_services import get_cuidador_puntaje, get_reviews_by_cuidador
-from petcare.infraestructura.models.usuario_model import Usuario, Cuidador
+from petcare.infraestructura.models.usuario_model import Cuidador, Usuario
 from petcare.infraestructura.models.reserva_model import Reserva
 from petcare.core.map_services import distancia_geodesica
-from sqlalchemy import or_, func
 
-'''
-def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha_fin: date) -> bool:
-    """
-    Verifica si el cuidador está disponible entre las fechas dadas.
-    Devuelve False si ya tiene reservas en ese rango.
-    """
-    reservas = db.query(Reserva).filter(
-        Reserva.cuidador_id == cuidador_id,
-        Reserva.estado.in_(["pendiente", "confirmada"]),  # opcional, según tu modelo
-        Reserva.fecha_inicio <= fecha_fin,
-        Reserva.fecha_fin >= fecha_inicio
-    ).all()
 
-    return len(reservas) == 0
-'''
+def completar_datos_cuidador_service(
+    db: Session,
+    usuario_id: int,
+    current_user: Usuario,
+    datos
+):
+    """
+    Completa o actualiza la información adicional de un cuidador.
+
+    Esta función verifica que:
+    - El usuario con el `usuario_id` exista.
+    - El usuario sea de tipo cuidador.
+    - El usuario autenticado tenga permiso para modificar estos datos.
+
+    Luego actualiza la descripción, servicios, tarifas y días no disponibles
+    asociados al cuidador.
+    """
+
+    # Validar usuario
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    if usuario.tipo != "cuidador":
+        raise HTTPException(status_code=400, detail="El usuario no es cuidador")
+    
+    # Validar autorización
+    if current_user.id != usuario_id:
+        raise HTTPException(
+            status_code=403,
+            detail="No autorizado para modificar datos de otro usuario"
+        )
+
+    # 3. Obtener cuidador
+    cuidador = db.query(Cuidador).filter(Cuidador.id == usuario_id).first()
+
+    if not cuidador:
+        raise HTTPException(status_code=404, detail="Cuidador no encontrado")
+
+    # 4. Serializar servicios
+    servicios_serializables = [
+        s.value if hasattr(s, "value") else str(s)
+        for s in datos.servicios
+    ]
+
+    # 5. Serializar días
+    dias_serializables = (
+        [str(d) for d in datos.dias_no_disponibles]
+        if datos.dias_no_disponibles else None
+    )
+
+    # 6. Actualizar campos
+    cuidador.descripcion = datos.descripcion
+    cuidador.servicios = servicios_serializables
+    cuidador.tarifas = datos.tarifas
+    cuidador.dias_no_disponibles = dias_serializables
+
+    # 7. Guardar cambios
+    db.commit()
+    db.refresh(cuidador)
+
+    return cuidador
+
 
 def cuidador_disponible(db: Session, cuidador_id: int, fecha_inicio: date, fecha_fin: date) -> bool:
     """
@@ -181,78 +232,3 @@ def buscar_cuidadores_disponibles(
 
     # Ordenar por distancia
     return sorted(resultado, key=lambda x: x["distancia_km"])
-
-'''
-def buscar_cuidadores_disponibles(
-    db: Session, 
-    cliente, 
-    especies: list[str], 
-    fecha_inicio: date, 
-    fecha_fin: date, 
-    radio_km: float = None
-):
-    """
-    Busca cuidadores disponibles que coincidan con la especie, la ubicación 
-    y la disponibilidad horaria del servicio solicitado.
-    """
-    if not cliente.lat or not cliente.lon:
-        raise ValueError("El cliente no tiene coordenadas registradas.")
-
-    if isinstance(especies, list):
-        # Crear la cláusula OR para buscar cualquiera de las especies en la columna servicios
-        especie_filter = or_(*[Cuidador.servicios.contains(e) for e in especies])
-    else:
-        especie_filter = Cuidador.servicios.contains(especies)
-
-    cuidadores = db.query(Cuidador).filter(especie_filter).all()
-
-    resultado = []
-
-    for cuidador in cuidadores:
-        promedio = get_cuidador_puntaje(db, cuidador.id)
-        resena = get_reviews_by_cuidador(db, cuidador.id)
-        if cuidador.lat is None or cuidador.lon is None:
-            continue
-
-        # Calcular distancia
-        distancia = distancia_geodesica((cliente.lat, cliente.lon), (cuidador.lat, cuidador.lon))
-        if radio_km is not None and distancia > radio_km:
-            continue
-
-        # Verificar reservas existentes
-        reservas_ocupadas = (
-            db.query(Reserva)
-            .filter(
-                Reserva.cuidador_id == cuidador.id,
-                Reserva.estado != "cancelada",
-                Reserva.fecha_inicio <= fecha_fin,
-                Reserva.fecha_fin >= fecha_inicio
-            )
-            .count()
-        )
-        if reservas_ocupadas > 0:
-            continue
-
-        # Verificar días no disponibles
-        dias_no_disp = cuidador.dias_no_disponibles or []
-        if any(str(d) in dias_no_disp for d in range((fecha_fin - fecha_inicio).days + 1)):
-            continue
-
-        resultado.append({
-            "id": cuidador.id,
-            "nombre": cuidador.nombre,
-            "email": cuidador.email,
-            "direccion": cuidador.direccion,
-            "descripcion": cuidador.descripcion,
-            "tarifas": cuidador.tarifas,
-            "distancia_km": round(distancia, 2),
-            "puntaje": promedio,
-            "reseñas": resena
-        })
-
-    #Oredenar por distancia
-    return sorted(resultado, key=lambda x: x["distancia_km"])
-'''
-
-
-

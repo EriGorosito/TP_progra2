@@ -75,66 +75,7 @@ class NotificationObserver:
             return
 
         self.notificaciones.append(noti)
-'''
-class NotificationObserver:
-    """Observador concreto que genera notificaciones ante eventos."""
-    def __init__(self):
-        self.notificaciones = []  # se podría persistir luego en base de datos
 
-
-    def update(self, event_name: str, data):
-        """Reacciona a los eventos creando una Notificación."""
-        if event_name == "reserva_creada":
-            noti = Notificacion(
-                id=len(self.notificaciones) + 1,
-                usuario_id=data["cuidador_id"],
-                mensaje=f"Nueva reserva solicitada por {data['cliente'].nombre}.",
-                tipo="reserva"
-            )
-
-
-        elif event_name == "reserva_confirmada":
-            noti = Notificacion(
-                id=len(self.notificaciones) + 1,
-                usuario_id=data["cliente"].id,
-                mensaje=f"Tu reserva con {data['cuidador'].nombre} fue confirmada.",
-                tipo="reserva"
-            )
-
-        elif event_name == "reserva_rechazada":
-            noti = Notificacion(
-                id=len(self.notificaciones) + 1,
-                usuario_id=data["cliente"].id,
-                mensaje=f"Tu reserva con {data['cuidador'].nombre} fue cancelada.",
-                tipo="reserva"
-            )
-
-        elif event_name == "resena_creada":
-            noti = Notificacion(
-                id=len(self.notificaciones) + 1,
-                usuario_id=data["cuidador"].id,
-                mensaje=f"{data['cliente'].nombre} dejó una reseña: {data['comentario']}",
-                tipo="resena"
-            )
-
-        elif event_name == "mascota_registrada":
-            # La notificación es para el propietario mismo
-            # para confirmar que su mascota fue registrada
-            noti = Notificacion(
-                id=len(self.notificaciones) + 1,
-                usuario_id=data["owner"].id,
-                mensaje=f"¡Felicidades! Tu mascota '{data['pet'].nombre}' ({data['pet'].especie}) ha sido registrada.",
-                tipo="registro"
-            )
-
-
-        else:
-            # Si no se reconoce el evento, no se hace nada
-            return
-
-
-        self.notificaciones.append(noti)
-'''
 # Inicialización única del sistema de eventos
 event_manager = EventManager()
 noti_observer = NotificationObserver()
