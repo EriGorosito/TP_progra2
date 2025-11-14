@@ -78,7 +78,6 @@ Flujo Principal:
         * Información personal (descripción, experiencia)
         * Servicio mascotas (perro, gato, etc.)
         * Tarifas por servicio
-        * Zona de cobertura
         * Disponibilidad (calendario)
     3. Cuidador completa cada sección
     4. Sistema valida datos requeridos
@@ -86,7 +85,6 @@ Flujo Principal:
 
 4. Buscar Cuidador (Complejo)
 Actor: Cliente
-Precondición: Cliente con al menos una mascota registrada
 Flujo Principal:
     1. Cliente selecciona "Buscar Cuidadores"
     2. Sistema muestra filtros: servicio, fecha, ubicación, tipo de mascota
@@ -121,7 +119,7 @@ app/
 ├── core/
 ├── db/
 ├── domain/
-│   infraestructura/
+├── infraestructura/
 │    ├──models/
 │    └── factories/
 ├── schemas/
@@ -158,6 +156,10 @@ Contiene tareas automatizadas o programadas.
 📄 main.py
 
 Inicializa FastAPI, importa rutas, configura eventos y middleware.
+
+## UML del proyecto
+
+El diagrama puede encontrarse en el archivo **[UML_domain.png](UML_domain.png)**.
 
 ## 🚀 Cómo desplegar y probar la API
 
