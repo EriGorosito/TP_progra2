@@ -25,53 +25,41 @@ def completar_datos_cuidador(
     db: Session = Depends(get_db)
 ):
     """
-    Completa o crea los datos del perfil del cuidador autenticado.
+    Completa los datos y la descripción del cuidador autenticado.
     """
-    
-    # 1. Validar Usuario (Esto está perfecto)
+    # 1. Validar Usuario
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if usuario.tipo != "cuidador":
         raise HTTPException(status_code=400, detail="El usuario no es cuidador")
-    
-    # Validación de Seguridad
-    if current_user.id != usuario_id:
-        raise HTTPException(status_code=403, detail="No autorizado para editar este perfil")
 
-    # --- 2. OBTENER O CREAR CUIDADOR (¡EL ARREGLO!) ---
-    
-    # Buscamos el perfil usando la CLAVE FORÁNEA (FK)
-    cuidador = db.query(Cuidador).filter(Cuidador.usuario_id == usuario_id).first()
-
+    # 2. Obtener Cuidador 
+    cuidador = db.query(Cuidador).filter(Cuidador.id == usuario_id).first()
     if not cuidador:
-        # Si no existe, lo creamos y lo vinculamos con la FK
-        cuidador = Cuidador(usuario_id=usuario_id) 
-        db.add(cuidador)
+        raise HTTPException(status_code=404, detail="Cuidador no encontrado")
 
-    # 3. Serializar datos (Perfecto)
+    # 3. Serializar datos para almacenamiento
     servicios_serializables = [
         s.value if hasattr(s, 'value') else str(s)
         for s in datos.servicios
     ]
+
     dias_serializables = (
         [str(d) for d in datos.dias_no_disponibles]
         if datos.dias_no_disponibles else None
     )
 
-    # 4. Actualizar atributos (Perfecto)
+    # 4. Actualizar atributos
     cuidador.descripcion = datos.descripcion
     cuidador.servicios = servicios_serializables
     cuidador.tarifas = datos.tarifas
     cuidador.dias_no_disponibles = dias_serializables
 
-    try:
-        # 5. Persistir cambios
-        db.commit()
-        db.refresh(cuidador)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al guardar datos: {e}")
+    # 5. Persistir cambios
+    db.commit()
+    db.refresh(cuidador)
 
     return {"mensaje": "Datos del cuidador completados correctamente"}
 
