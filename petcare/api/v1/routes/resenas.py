@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Depends
-from petcare.core.security import get_current_user
-from petcare.infraestructura.models.usuario_model import Usuario as UsuarioModel
 from sqlalchemy.orm import Session
 
 #Imporatciones locales 
@@ -18,13 +16,12 @@ review_router = APIRouter(prefix="/reviews", tags=["Reseñas"])
 @review_router.post("/", response_model=ReviewOut, status_code=201)
 def create_review_endpoint(
     payload: ReviewCreate,
-    db: Session = Depends(get_db),
-    current_user: UsuarioModel = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Crea una nueva reseña (review) en la base de datos.
     """
-    return create_review(db=db, data=payload, current_user=current_user)
+    return create_review(db=db, data=payload)
 
 
 @review_router.get("/cuidador/{cuidador_id}", response_model=list[ReviewOut])
@@ -50,5 +47,3 @@ def promedio_rating(
         "cuidador_id": cuidador_id,
         "promedio_rating": get_cuidador_puntaje(db, cuidador_id)
     }
-
-

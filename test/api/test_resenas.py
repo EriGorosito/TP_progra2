@@ -77,5 +77,3 @@ def test_crear_review_desde_reserva_finalizada(seeded_client, crear_cuidador):
     assert data["comentario"] == review_payload["comentario"]
     assert data["cuidador_id"] == 1
     assert data["reserva_id"] == reserva_id
-
-
