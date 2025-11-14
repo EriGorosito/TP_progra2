@@ -103,8 +103,7 @@ def buscar_cuidadores_disponibles(
 
     # --- B. Consulta Inicial ---
     #1. Empezamos consultando Cuidador.
-    #    SQLAlchemy hará el JOIN implícito a 'usuarios'
-    #    gracias a la herencia (Cuidador(Usuario)).
+
     query = db.query(Cuidador)
     
     # 2. Filtramos por tipo.
