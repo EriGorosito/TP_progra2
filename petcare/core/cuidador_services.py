@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.dialects.postgresql import JSONB
 from fastapi import HTTPException
 
@@ -153,18 +153,16 @@ def buscar_cuidadores_disponibles(
     especie_filter = or_(*filtros_especie)
 
     # --- B. Consulta Inicial ---
-    #1. Empezamos consultando Cuidador.
+    # 1. Consultamos Cuidador.
 
     query = db.query(Cuidador)
     
     # 2. Filtramos por tipo.
-    #    (Esto previene el error 'InvalidRequestError'
-    #    de tus datos contaminados del Cliente ID 1).
-    # DESPUÉS (Corregido y más robusto)
+
     query = query.filter(func.lower(Cuidador.tipo) == 'cuidador')
     
     # 3. Aplicamos el filtro de especies.
-    #    (Esto previene el error 'jsonb ~~ text' de PostgreSQL).
+    # Esto previene el error 'jsonb ~~ text' de PostgreSQL
     query = query.filter(especie_filter)
 
     # 4. Ejecutamos la consulta.
@@ -204,7 +202,7 @@ def buscar_cuidadores_disponibles(
             continue
 
         # 2. Verificar días no disponibles (Manuales)
-        dias_no_disp = cuidador.dias_no_disponibles or [] # Asumo que es una lista de strings: ["2029-12-05"]
+        dias_no_disp = cuidador.dias_no_disponibles or [] # lista de strings: ["2029-12-05"]
     
         # Generamos la lista de fechas que el cliente necesita
         delta = (fecha_fin - fecha_inicio).days + 1
