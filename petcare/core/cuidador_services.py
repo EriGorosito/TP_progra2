@@ -103,7 +103,7 @@ def buscar_cuidadores_disponibles(
     query = db.query(Cuidador)
     
     # 2. La unimos (JOIN) con la tabla Usuario usando la FK correcta
-    query = query.join(Usuario, Cuidador.usuario_id == Usuario.id)
+    query = query.join(Usuario, Cuidador.id == Usuario.id)
     
     # 3. Filtramos para asegurar que solo traemos usuarios de tipo 'cuidador'
     query = query.filter(Usuario.tipo == 'cuidador')
