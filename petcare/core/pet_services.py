@@ -41,7 +41,6 @@ def create_pet(db: Session, pet_data: PetCreate, current_user: UsuarioModel) -> 
     })
 
    
-
     return db_pet
 
 

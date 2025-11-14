@@ -58,7 +58,7 @@ Flujo Principal:
     2. Sistema muestra formulario (email, contraseña, tipo: Cliente/Cuidador)
     3. Usuario completa datos y envía
     4. Sistema valida unicidad de email
-    5. Sistema crea cuenta y envía email de confirmación
+    5. Sistema confirma creación exitosa
 2. Crear Perfil de Mascota (Simple)
 Actor: Cliente
 Precondición: Usuario registrado como Cliente
@@ -137,9 +137,7 @@ Aquí se definen los endpoints que reciben peticiones HTTP y llaman a los servic
 📁 core/
 
 Configuración esencial del sistema:
-variables de entorno, autenticación, seguridad, inicialización global. Conecta la API con el dominio.
-Se encargan de coordinar acciones entre modelos, reglas de negocio y base de datos.
-
+variables de entorno, autenticación, seguridad, inicialización global. Conecta la API con el dominio. Se encargan de coordinar acciones entre modelos, reglas de negocio y base de datos.
 
 📁 domain/
 
@@ -152,7 +150,6 @@ Modelos ORM que representan entidades en la base de datos.
 📁 schemas/
 
 Modelos Pydantic usados para validar y estructurar datos de entrada y salida en la API.
-
 
 📁 tasks/
 
