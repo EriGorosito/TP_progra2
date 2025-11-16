@@ -235,7 +235,11 @@ Fuente: GitHub.
 
 URL de Staging: https://petcare-api-f6fm.onrender.com/
 
+<img width="1528" height="831" alt="deploy_dockerhub" src="https://github.com/user-attachments/assets/754532fe-6a2a-4b13-8b3c-a9c638e6a033" />
+
+
 * 2. Entorno de Producción (Versión Estable)
+
 Este despliegue utiliza una imagen de Docker que construimos y alojamos en Docker Hub. Solo actualizamos esta imagen manualmente cuando una versión ha sido probada exhaustivamente en staging y se considera estable. Esto garantiza que la API principal sea siempre robusta y confiable.
 
 Propósito: Versión final y estable para consumo.
@@ -243,7 +247,7 @@ Propósito: Versión final y estable para consumo.
 Fuente: Docker Hub.
 
 URL de Producción: https://petcare-api-sepa.onrender.com/
-
+<img width="1517" height="293" alt="Captura de pantalla 2025-11-15 221147" src="https://github.com/user-attachments/assets/33c649cc-9669-41df-b419-86213476625d" />
 Ambos entornos en Render están conectados a nuestra base de datos PostgreSQL hosteada en Supabase, asegurando que las pruebas se realicen contra una infraestructura de datos idéntica a la de producción.
 
 
