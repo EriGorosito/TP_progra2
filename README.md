@@ -227,6 +227,7 @@ exit
 Para la accesibilidad pública y las pruebas continuas, la API está desplegada en la plataforma Render. Seguimos una estrategia de dos entornos para separar las pruebas ágiles del entorno de producción estable:
 
 **1. Entorno de Staging (Pruebas Rápidas)** 
+
 Este despliegue está conectado directamente a la rama principal de nuestro repositorio en GitHub. Se actualiza automáticamente con cada push, permitiéndonos validar nuevas funcionalidades y probar endpoints de forma inmediata en un entorno real.
 
 Propósito: Pruebas y validación continua.
