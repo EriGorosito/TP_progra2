@@ -223,4 +223,27 @@ pytest
 exit
 ```
 
+☁️ Despliegue en Entornos Cloud (Render)
+Para la accesibilidad pública y las pruebas continuas, la API está desplegada en la plataforma Render. Seguimos una estrategia de dos entornos para separar las pruebas ágiles del entorno de producción estable:
+
+1. Entorno de Staging (Pruebas Rápidas)
+Este despliegue está conectado directamente a la rama principal de nuestro repositorio en GitHub. Se actualiza automáticamente con cada push, permitiéndonos validar nuevas funcionalidades y probar endpoints de forma inmediata en un entorno real.
+
+Propósito: Pruebas y validación continua.
+
+Fuente: GitHub.
+
+URL de Staging: https://petcare-api-f6fm.onrender.com/
+
+2. Entorno de Producción (Versión Estable)
+Este despliegue utiliza una imagen de Docker que construimos y alojamos en Docker Hub. Solo actualizamos esta imagen manualmente cuando una versión ha sido probada exhaustivamente en staging y se considera estable. Esto garantiza que la API principal sea siempre robusta y confiable.
+
+Propósito: Versión final y estable para consumo.
+
+Fuente: Docker Hub.
+
+URL de Producción: https://petcare-api-sepa.onrender.com/
+
+Ambos entornos en Render están conectados a nuestra base de datos PostgreSQL hosteada en Supabase, asegurando que las pruebas se realicen contra una infraestructura de datos idéntica a la de producción.
+
 
